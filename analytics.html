@@ -1,0 +1,278 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReferBridge | Analytics &amp; Insights</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="analytics.css">
+<link rel="stylesheet" href="sidebar-collapse.css">
+<link rel="icon" type="image/png" href="assets/referbridge-icon.png">
+<link rel="apple-touch-icon" href="assets/referbridge-icon.png">
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <a href="dashboard.html" class="brand-mark">
+      <span class="brand-mark-icon"><img src="assets/referbridge-icon.png" alt="ReferBridge logo"></span>
+      <span class="brand-name">Refer<span>Bridge</span></span>
+    </a>
+
+    <nav class="nav-links">
+      <a href="home.html" class="nav-link" data-tooltip="Home"><span class="nav-icon">&#127968;</span><span>Home</span></a>
+      <a href="dashboard.html" class="nav-link" data-tooltip="Dashboard"><span class="nav-icon">&#128202;</span><span>Dashboard</span></a>
+      <a href="profile.html" class="nav-link" data-tooltip="Hospital Profile"><span class="nav-icon">&#127973;</span><span>Hospital Profile</span></a>
+      <a href="beds.html" class="nav-link" data-tooltip="Bed Management"><span class="nav-icon">&#128719;</span><span>Bed Management</span></a>
+      <a href="requests.html" class="nav-link" data-tooltip="Incoming Requests"><span class="nav-icon">&#128229;</span><span>Incoming Requests</span></a>
+      <a href="network.html" class="nav-link" data-tooltip="Hospital Network"><span class="nav-icon">&#127760;</span><span>Hospital Network</span></a>
+      <a href="analytics.html" class="nav-link active" data-tooltip="Analytics"><span class="nav-icon">&#128200;</span><span>Analytics</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="themeToggle" class="theme-toggle-inline" title="Switch between Dark and Light mode">
+        <span id="themeIcon">&#127769;</span> <span>Theme</span>
+      </button>
+      <button id="logoutBtn" class="logout-btn" title="Sign out of ReferBridge">
+        <span>&#128682;</span> <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar fade-in-up">
+      <div>
+        <p class="eyebrow">INTELLIGENCE &amp; REPORTING</p>
+        <h1>Referral Flow &amp; Capacity Analytics</h1>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="topbar-mic-btn" id="topbarMicBtn" title="Ask AI Assistant by voice" aria-label="Voice Assistant">&#127897;<span class="mic-label">Speak</span></button>
+        <button type="button" class="topbar-cmd-chip" title="Open Quick Command Palette (Ctrl + K)">
+          <span>Quick Actions</span> <kbd>Ctrl K</kbd>
+        </button>
+        <div class="range-selector">
+          <button type="button" class="range-btn active" data-range="7">7 Days</button>
+          <button type="button" class="range-btn" data-range="30">30 Days</button>
+          <button type="button" class="range-btn" data-range="90">Quarter</button>
+      </div>
+    </header>
+
+    <!-- Top Key Metrics Cards -->
+    <section class="an-stat-grid fade-in-up">
+      <div class="an-stat-card">
+        <span class="an-stat-icon">&#128229;</span>
+        <div>
+          <p class="an-stat-label">Total Referrals</p>
+          <p class="an-stat-number" id="anTotal">0</p>
+          <span class="an-stat-sub">Volume this cycle</span>
+        </div>
+      </div>
+
+      <div class="an-stat-card green">
+        <span class="an-stat-icon green">&#10004;</span>
+        <div>
+          <p class="an-stat-label">Accepted Transfers</p>
+          <p class="an-stat-number" id="anAccepted">0</p>
+          <span class="an-stat-sub green">Inpatient bed intake</span>
+        </div>
+      </div>
+
+      <div class="an-stat-card red">
+        <span class="an-stat-icon red">&#10060;</span>
+        <div>
+          <p class="an-stat-label">Rerouted / Declined</p>
+          <p class="an-stat-number" id="anRejected">0</p>
+          <span class="an-stat-sub red">Network reroutes</span>
+        </div>
+      </div>
+
+      <div class="an-stat-card yellow">
+        <span class="an-stat-icon yellow">?</span>
+        <div>
+          <p class="an-stat-label">Pending Decision</p>
+          <p class="an-stat-number" id="anPending">0</p>
+          <span class="an-stat-sub yellow">Active clinical review</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Charts Grid -->
+    <div class="charts-grid fade-in-up">
+      <!-- 7-Day Referral Flow Chart Card -->
+      <section class="chart-card flow-card">
+        <div class="chart-header">
+          <div>
+            <h3 class="chart-title">7-Day Referral Flow Trend</h3>
+            <p class="chart-subtitle">Daily intake vs. accepted inpatient admissions</p>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-line incoming"></span> Incoming Volume</span>
+            <span class="legend-item"><span class="legend-line accepted"></span> Accepted Admissions</span>
+          </div>
+        </div>
+
+        <div class="svg-chart-container" id="svgChartWrap">
+          <svg viewBox="0 0 700 240" class="flow-svg" id="flowSvg">
+            <defs>
+              <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#22c8ff" stop-opacity="0.32"/>
+                <stop offset="100%" stop-color="#22c8ff" stop-opacity="0.0"/>
+              </linearGradient>
+              <linearGradient id="areaGradGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#14e4b8" stop-opacity="0.28"/>
+                <stop offset="100%" stop-color="#14e4b8" stop-opacity="0.0"/>
+              </linearGradient>
+            </defs>
+
+            <line x1="50" y1="30" x2="670" y2="30" class="gridline"/>
+            <line x1="50" y1="80" x2="670" y2="80" class="gridline"/>
+            <line x1="50" y1="130" x2="670" y2="130" class="gridline"/>
+            <line x1="50" y1="180" x2="670" y2="180" class="gridline"/>
+
+            <text x="35" y="34" class="axis-label">25</text>
+            <text x="35" y="84" class="axis-label">18</text>
+            <text x="35" y="134" class="axis-label">10</text>
+            <text x="35" y="184" class="axis-label">0</text>
+
+            <path id="areaIncoming" class="chart-area incoming" fill="url(#areaGrad)"/>
+            <path id="areaAccepted" class="chart-area accepted" fill="url(#areaGradGreen)"/>
+
+            <path id="chartLine" class="chart-line incoming"/>
+            <path id="chartLineAccepted" class="chart-line accepted"/>
+
+            <g id="chartPoints"></g>
+          </svg>
+
+          <div class="chart-tooltip" id="chartTooltip">
+            <strong id="tipDay">Day</strong>
+            <span>Incoming: <b id="tipIncoming">0</b></span>
+            <span>Accepted: <b id="tipAccepted">0</b></span>
+          </div>
+        </div>
+
+        <div class="x-axis-labels" id="xAxisLabels">
+          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        </div>
+      </section>
+
+      <!-- Bed Utilization Donut Gauge Card -->
+      <section class="chart-card donut-card">
+        <div class="chart-header">
+          <div>
+            <h3 class="chart-title">Bed Utilization</h3>
+            <p class="chart-subtitle">Real-time occupancy ratio</p>
+          </div>
+        </div>
+
+        <div class="donut-container">
+          <svg viewBox="0 0 200 200" class="donut-svg">
+            <circle cx="100" cy="100" r="74" class="donut-track"/>
+            <circle cx="100" cy="100" r="74" class="donut-fill" id="donutGauge"/>
+          </svg>
+          <div class="donut-center-text">
+            <span class="donut-percent" id="donutPercent">0%</span>
+            <small class="donut-label">OCCUPIED</small>
+          </div>
+        </div>
+
+        <div class="donut-foot" id="donutStatus">
+          <span class="live-radar-dot"></span>
+          <span>Optimal bed capacity</span>
+        </div>
+      </section>
+    </div>
+
+    <!-- Secondary Charts Row -->
+    <div class="secondary-charts-grid fade-in-up">
+      <!-- Weekly Referral Volume Activity Bars -->
+      <section class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3 class="chart-title">Weekly Intake Breakdown</h3>
+            <p class="chart-subtitle">Transfers categorized by daytime vs. night triage</p>
+          </div>
+        </div>
+        <div class="bar-chart" id="barChart"></div>
+      </section>
+
+      <!-- Decision Mix Outcome Bars -->
+      <section class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3 class="chart-title">Referral Decision Mix</h3>
+            <p class="chart-subtitle">Efficiency &amp; triage acceptance metrics</p>
+          </div>
+        </div>
+
+        <div class="mix-bars">
+          <div class="mix-row">
+            <div class="mix-info">
+              <span>Accepted Rate</span>
+              <strong id="mixAcceptedLabel">0%</strong>
+            </div>
+            <div class="mix-track">
+              <div class="mix-fill green" id="mixAccepted"></div>
+            </div>
+          </div>
+
+          <div class="mix-row">
+            <div class="mix-info">
+              <span>Rejected / Rerouted</span>
+              <strong id="mixRejectedLabel">0%</strong>
+            </div>
+            <div class="mix-track">
+              <div class="mix-fill red" id="mixRejected"></div>
+            </div>
+          </div>
+
+          <div class="mix-row">
+            <div class="mix-info">
+              <span>Pending Review</span>
+              <strong id="mixPendingLabel">0%</strong>
+            </div>
+            <div class="mix-track">
+              <div class="mix-fill yellow" id="mixPending"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="outcome-advice" id="outcomeAdvice">
+          <span>?? <strong>Operational Insight:</strong> Acceptance rate is healthy at 65%+. Cardiovascular bed requests peak between 08:00 AM � 11:30 AM.</span>
+        </div>
+      </section>
+
+      <!-- Specialty Demand Radar Chart -->
+      <section class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3 class="chart-title">Department Demand Radar</h3>
+            <p class="chart-subtitle">Relative demand intensity across 6 clinical domains</p>
+          </div>
+        </div>
+
+        <div class="radar-wrap">
+          <svg viewBox="0 0 300 240" class="radar-svg" id="radarSvg">
+            <polygon points="150,30 240,80 240,170 150,210 60,170 60,80" class="radar-grid-poly"/>
+            <polygon points="150,60 210,95 210,155 150,185 90,155 90,95" class="radar-grid-poly-inner"/>
+            <polygon id="radarShape" class="radar-data-poly"/>
+          </svg>
+          <div class="radar-labels-grid" id="radarLabels">
+            <span>Cardiology: 92%</span>
+            <span>Neurology: 78%</span>
+            <span>Orthopedics: 64%</span>
+            <span>Pediatrics: 45%</span>
+            <span>Trauma: 85%</span>
+            <span>Nephrology: 58%</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="sidebar-collapse.js"></script>
+<script src="analytics.js"></script>
+</body>
+</html>

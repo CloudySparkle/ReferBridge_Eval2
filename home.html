@@ -1,0 +1,463 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReferBridge | Hospital Referral Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="home.css">
+<link rel="stylesheet" href="home-enhanced.css">
+<link rel="stylesheet" href="sidebar-collapse.css">
+<link rel="icon" type="image/png" href="assets/referbridge-icon.png">
+<link rel="apple-touch-icon" href="assets/referbridge-icon.png">
+</head>
+<body>
+
+<!-- Animated Background Particles -->
+<div class="particle-field" aria-hidden="true">
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+</div>
+
+<video class="home-video-background" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+  <source src="assets/home-network-background.mp4" type="video/mp4">
+</video>
+<div class="home-video-overlay" aria-hidden="true"></div>
+
+<div class="home-shell">
+  <aside class="sidebar">
+    <a href="home.html" class="brand">
+      <img src="assets/referbridge-icon.png" alt="ReferBridge icon" class="brand-logo-img">
+      <span>Refer<span>Bridge</span><small>HOSPITAL NETWORK</small></span>
+    </a>
+    <nav>
+      <a href="home.html" class="nav-link active" data-tooltip="Home"><span class="nav-icon">&#127968;</span><span>Home</span></a>
+      <a href="dashboard.html" class="nav-link" data-tooltip="Dashboard"><span class="nav-icon">&#128202;</span><span>Dashboard</span></a>
+      <a href="profile.html" class="nav-link" data-tooltip="Hospital Profile"><span class="nav-icon">&#127973;</span><span>Hospital Profile</span></a>
+      <a href="beds.html" class="nav-link" data-tooltip="Bed Management"><span class="nav-icon">&#128719;</span><span>Bed Management</span></a>
+      <a href="requests.html" class="nav-link" data-tooltip="Incoming Requests"><span class="nav-icon">&#128229;</span><span>Incoming Requests</span></a>
+      <a href="network.html" class="nav-link" data-tooltip="Hospital Network"><span class="nav-icon">&#127760;</span><span>Hospital Network</span></a>
+      <a href="analytics.html" class="nav-link" data-tooltip="Analytics"><span class="nav-icon">&#128200;</span><span>Analytics</span></a>
+    </nav>
+    <div class="side-bottom">
+      <button id="themeToggle" class="theme-toggle-btn" title="Switch between Dark and Light mode">
+        <span id="themeIcon">&#127769;</span> <span>Theme</span>
+      </button>
+      <button id="logoutBtn" class="logout-btn" title="Sign out of ReferBridge">
+        <span>&#128682;</span> <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="home-main">
+    <!-- Top Header -->
+    <header class="home-top fade-in-up">
+      <div>
+        <p class="eyebrow">HOSPITAL REFERRAL NETWORK</p>
+        <h1>Welcome back, <span id="adminName">Admin</span> &#128075;</h1>
+        <p class="top-desc">Coordinate capacity, emergency referrals and partner hospitals from a single command hub.</p>
+      </div>
+      <div class="topbar-quick-actions">
+        <button type="button" class="topbar-mic-btn" id="topbarMicBtn" title="Ask AI Assistant by voice" aria-label="Voice Assistant">&#127897;<span class="mic-label">Speak</span></button>
+        <button type="button" class="topbar-cmd-chip" title="Open Quick Command Palette (Ctrl + K)">
+          <span>Quick Actions</span> <kbd>Ctrl K</kbd>
+        </button>
+        <a class="profile-chip" href="profile.html" title="View & Edit Hospital Profile">
+          <div id="avatar" class="avatar-circle">A</div>
+          <div class="profile-chip-text">
+            <b id="adminNameChip">Admin</b>
+            <small id="adminEmail">admin@referbridge.com</small>
+          </div>
+        </a>
+      </div>
+    </header>
+
+    <!-- -------------------------------------------------------------------
+         ANIMATED PATIENT JOURNEY STORY CARD
+         ------------------------------------------------------------------- -->
+    <section class="journey-story-card fade-in-up" id="journeyCard" aria-label="Patient referral journey animation">
+      <div class="journey-header">
+        <div class="journey-badge">
+          <span class="live-radar-dot"></span>
+          <span>LIVE REFERRAL JOURNEY</span>
+        </div>
+        <p class="journey-tagline">See how ReferBridge saves lives in real time</p>
+      </div>
+
+      <div class="journey-track">
+        <!-- Step 1: Patient Arrives -->
+        <div class="journey-step" id="jStep1">
+          <div class="journey-node" data-step="1">
+            <div class="jnode-icon">&#128657;</div><div class="jnode-pulse"></div>
+          </div>
+          <div class="journey-label">
+            <strong>Patient Arrives</strong>
+            <span>Emergency visit � City Hospital A</span>
+          </div>
+        </div>
+
+        <!-- Connector 1 -->
+        <div class="journey-connector" id="jConn1">
+          <div class="conn-line"></div>
+          <div class="conn-dot moving"></div>
+        </div>
+
+        <!-- Step 2: Hospital Full -->
+        <div class="journey-step" id="jStep2">
+          <div class="journey-node danger" data-step="2">
+            <div class="jnode-icon">&#9888;</div><div class="jnode-pulse danger"></div>
+          </div>
+          <div class="journey-label">
+            <strong>ICU Full</strong>
+            <span>Referred � No capacity</span>
+          </div>
+          <div class="journey-badge-mini danger">FULL</div>
+        </div>
+
+        <!-- Connector 2 -->
+        <div class="journey-connector" id="jConn2">
+          <div class="conn-line"></div>
+          <div class="conn-dot moving" style="animation-delay: 1.2s"></div>
+        </div>
+
+        <!-- Step 3: ReferBridge -->
+        <div class="journey-step" id="jStep3">
+          <div class="journey-node hub" data-step="3">
+            <div class="jnode-icon">&#128269;</div><div class="jnode-pulse hub"></div>
+            <div class="jnode-pulse hub delay1"></div>
+          </div>
+          <div class="journey-label">
+            <strong>ReferBridge</strong>
+            <span>Scanning network � AI Match</span>
+          </div>
+          <div class="journey-badge-mini hub">LIVE</div>
+        </div>
+
+        <!-- Connector 3 -->
+        <div class="journey-connector" id="jConn3">
+          <div class="conn-line"></div>
+          <div class="conn-dot moving green" style="animation-delay: 2.4s"></div>
+        </div>
+
+        <!-- Step 4: Match Found -->
+        <div class="journey-step" id="jStep4">
+          <div class="journey-node success" data-step="4">
+            <div class="jnode-icon">&#9989;</div><div class="jnode-pulse success"></div>
+          </div>
+          <div class="journey-label">
+            <strong>Match Found</strong>
+            <span>Sunrise Hospital � 6 ICU beds</span>
+          </div>
+          <div class="journey-badge-mini success">OPEN</div>
+        </div>
+
+        <!-- Connector 4 -->
+        <div class="journey-connector" id="jConn4">
+          <div class="conn-line"></div>
+          <div class="conn-dot moving green" style="animation-delay: 3.6s"></div>
+        </div>
+
+        <!-- Step 5: Patient Saved -->
+        <div class="journey-step" id="jStep5">
+          <div class="journey-node final" data-step="5">
+            <div class="jnode-icon">&#127973;</div><div class="jnode-pulse final"></div>
+          </div>
+          <div class="journey-label">
+            <strong>Care Delivered</strong>
+            <span>Patient admitted � 12 min</span>
+          </div>
+          <div class="journey-badge-mini final">SAVED</div>
+        </div>
+      </div>
+
+      <!-- Live Ticker -->
+      <div class="journey-ticker">
+        <span class="ticker-label">LIVE ACTIVITY</span>
+        <div class="ticker-scroll">
+          <div class="ticker-inner" id="tickerInner">
+            <span class="tick">&#128680; REQ-447 � Cardiac Arrest � Lotus Care &#8594; Sunrise � 3 min ago</span>
+            <span class="tick">&#9888; REQ-448 � Stroke Unit � Green Valley &#8594; Full � Searching...</span>
+            <span class="tick">&#9989; REQ-441 � ICU Transfer � Om Research � Accepted � 7 min ago</span>
+            <span class="tick">&#9888; REQ-449 � Pediatric Emergency � Riverside � 0 ICU beds &#8594; Rerouting</span>
+            <span class="tick">&#128680; REQ-450 � Ortho Surgery � City General &#8594; New Life Hosp � 2 min ago</span>
+            <span class="tick">&#128680; REQ-447 � Cardiac Arrest � Lotus Care &#8594; Sunrise � 3 min ago</span>
+            <span class="tick">&#9888; REQ-448 � Stroke Unit � Green Valley &#8594; Full � Searching...</span>
+            <span class="tick">&#9989; REQ-441 � ICU Transfer � Om Research � Accepted � 7 min ago</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------------------
+         HERO CARD with Network Map
+         ------------------------------------------------------------------- -->
+    <section class="hero-card fade-in-up">
+      <div class="hero-copy">
+        <div class="live-pill">
+          <span class="live-radar-dot"></span>
+          <span>LIVE HOSPITAL NETWORK</span>
+        </div>
+        <h2>When one hospital can't help,<br><span>the network keeps care moving.</span></h2>
+        <p>ReferBridge gives hospital administrators a shared real-time view of bed capacity, specialized departments, and incoming referral requests � enabling medical teams to coordinate patient transfers with zero delays.</p>
+
+        <div class="hero-actions">
+          <a href="dashboard.html" class="btn-hero-primary btn-ripple">Open Admin Dashboard &#8594;</a>
+          <a href="network.html" class="btn-hero-secondary btn-ripple">View Hospital Network</a>
+        </div>
+
+        <div class="stats">
+          <div class="stat-box">
+            <b id="statPartners">8</b>
+            <span>Partner hospitals</span>
+          </div>
+          <div class="stat-box">
+            <b id="statSpecialties">6</b>
+            <span>Core specialties</span>
+          </div>
+          <div class="stat-box">
+            <b>24/7</b>
+            <span>Capacity visibility</span>
+          </div>
+          <div class="stat-box">
+            <b id="statSaved">142</b>
+            <span>Lives connected</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="network-card">
+        <div class="network-head">
+          <span>NETWORK MAP</span>
+          <b class="sync-status"><span class="live-radar-dot"></span> REAL-TIME SYNC</b>
+        </div>
+
+        <!-- Interactive Animated SVG Network Canvas -->
+        <svg viewBox="0 0 500 360" class="network-svg" aria-label="Hospital network transfer routes animation">
+          <defs>
+            <filter id="nodeGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+            <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#22c8ff" stop-opacity="0.7"/>
+              <stop offset="100%" stop-color="#14e4b8" stop-opacity="0.3"/>
+            </linearGradient>
+            <radialGradient id="coreGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#14e4b8"/>
+              <stop offset="100%" stop-color="#22c8ff"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Transfer Route Lines -->
+          <g class="routes">
+            <path d="M250 180 L90 70" stroke="url(#routeGrad)"/>
+            <path d="M250 180 L410 70" stroke="url(#routeGrad)"/>
+            <path d="M250 180 L70 270" stroke="url(#routeGrad)"/>
+            <path d="M250 180 L430 270" stroke="url(#routeGrad)"/>
+            <path d="M250 180 L250 320" stroke="url(#routeGrad)"/>
+            <path d="M90 70 L410 70" stroke="rgba(34,200,255,0.15)" stroke-dasharray="4,4"/>
+            <path d="M70 270 L430 270" stroke="rgba(34,200,255,0.15)" stroke-dasharray="4,4"/>
+          </g>
+
+          <!-- Peripheral Hospital Nodes -->
+          <g class="nodes">
+            <g class="node-group" data-title="Lotus Care Hospital" data-info="22 Beds � Cardiology &amp; Ortho">
+              <circle cx="90" cy="70" r="14" class="node-circle" filter="url(#nodeGlow)"/>
+              <text x="90" y="74" text-anchor="middle" class="node-icon">H1</text>
+            </g>
+            <g class="node-group" data-title="Sunrise Multispecialty" data-info="6 Beds � Surgery &amp; Pediatrics">
+              <circle cx="410" cy="70" r="14" class="node-circle" filter="url(#nodeGlow)"/>
+              <text x="410" y="74" text-anchor="middle" class="node-icon">H2</text>
+            </g>
+            <g class="node-group" data-title="Green Valley Hospital" data-info="Full (ICU 0) � Stroke Center">
+              <circle cx="70" cy="270" r="14" class="node-circle" filter="url(#nodeGlow)"/>
+              <text x="70" y="274" text-anchor="middle" class="node-icon">H3</text>
+            </g>
+            <g class="node-group" data-title="Riverside Hospital" data-info="18 Beds � Trauma &amp; Ortho">
+              <circle cx="430" cy="270" r="14" class="node-circle" filter="url(#nodeGlow)"/>
+              <text x="430" y="274" text-anchor="middle" class="node-icon">H4</text>
+            </g>
+            <g class="node-group" data-title="Om Research Centre" data-info="26 Beds � Nephrology &amp; ICU">
+              <circle cx="250" cy="320" r="14" class="node-circle" filter="url(#nodeGlow)"/>
+              <text x="250" y="324" text-anchor="middle" class="node-icon">H5</text>
+            </g>
+          </g>
+
+          <!-- Center Command Hub Node -->
+          <circle class="core-halo" cx="250" cy="180" r="36"/>
+          <circle class="core-halo-2" cx="250" cy="180" r="28"/>
+          <circle class="core" cx="250" cy="180" r="22" filter="url(#nodeGlow)"/>
+          <text x="250" y="186" text-anchor="middle" class="core-text">&#128302;</text>
+
+          <!-- Animated Live Referral Pulse Packets -->
+          <g class="pulse-dot">
+            <circle r="5"><animateMotion dur="2.2s" repeatCount="indefinite" path="M250 180 L90 70"/></circle>
+          </g>
+          <g class="pulse-dot green">
+            <circle r="5"><animateMotion dur="2.7s" begin="0.4s" repeatCount="indefinite" path="M250 180 L430 270"/></circle>
+          </g>
+          <g class="pulse-dot blue">
+            <circle r="5"><animateMotion dur="2.5s" begin="0.9s" repeatCount="indefinite" path="M250 180 L250 320"/></circle>
+          </g>
+          <g class="pulse-dot">
+            <circle r="5"><animateMotion dur="3.1s" begin="1.2s" repeatCount="indefinite" path="M410 70 L250 180"/></circle>
+          </g>
+          <g class="pulse-dot green">
+            <circle r="5"><animateMotion dur="2.9s" begin="0.7s" repeatCount="indefinite" path="M70 270 L250 180"/></circle>
+          </g>
+        </svg>
+
+        <div class="network-tooltip-card" id="networkTooltip">
+          <strong id="tipNodeTitle">Active Referral Matrix</strong>
+          <span id="tipNodeInfo">Hover over any hospital node to inspect capacity</span>
+        </div>
+
+        <div class="network-note">
+          <b>Active Referral Matrix</b>
+          <span>Live capacity synchronization across regional emergency centers</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Actions Grid -->
+    <section class="quick-grid fade-in-up">
+      <a href="beds.html" class="quick-card btn-ripple">
+        <div class="quick-icon-wrap" style="background: rgba(45,213,131,0.15); color: var(--rb-green);">&#128719;</div>
+        <div>
+          <b>Manage Beds</b>
+          <small>Update ICU &amp; general ward capacity in real-time</small>
+        </div>
+        <strong class="quick-arrow">&#8594;</strong>
+      </a>
+
+      <a href="requests.html" class="quick-card btn-ripple">
+        <div class="quick-icon-wrap" style="background: rgba(34,200,255,0.15); color: var(--rb-cyan);">&#128229;</div>
+        <div>
+          <b>Review Requests</b>
+          <small>Triage, inspect and accept incoming patient referrals</small>
+        </div>
+        <strong class="quick-arrow">&#8594;</strong>
+      </a>
+
+      <a href="network.html" class="quick-card btn-ripple">
+        <div class="quick-icon-wrap" style="background: rgba(139,106,255,0.15); color: var(--rb-purple);">&#127760;</div>
+        <div>
+          <b>Hospital Network</b>
+          <small>Browse verified partner facility directory &amp; distances</small>
+        </div>
+        <strong class="quick-arrow">&#8594;</strong>
+      </a>
+
+      <a href="analytics.html" class="quick-card btn-ripple">
+        <div class="quick-icon-wrap" style="background: rgba(245,183,56,0.15); color: var(--rb-yellow);">&#128200;</div>
+        <div>
+          <b>View Analytics</b>
+          <small>Track 7-day flow trends, outcomes and bed utilization</small>
+        </div>
+        <strong class="quick-arrow">&#8594;</strong>
+      </a>
+    </section>
+  </main>
+</div>
+
+<!-- -----------------------------------------------------------------------
+     REFERBOT AI ASSISTANT � CHATBOT UI (Evaluation Structure � Non-functional)
+     ----------------------------------------------------------------------- -->
+
+<!-- Floating Launcher Button -->
+<button class="referbot-launcher" id="referbotLauncher" aria-label="Open ReferBot AI Assistant" title="ReferBot � AI Medical Copilot">
+  <span class="referbot-sparkle">&#10024;</span>
+  <span>ReferBot AI</span>
+  <span class="referbot-launcher-badge">NEW</span>
+</button>
+
+<!-- Chat Window -->
+<div class="referbot-window hidden" id="referbotWindow" role="dialog" aria-modal="true" aria-label="ReferBot AI Chat">
+
+  <!-- Header -->
+  <div class="referbot-header">
+    <div class="referbot-profile">
+      <div class="referbot-avatar">&#129302;</div>
+      <div>
+        <b>ReferBot</b>
+        <small><span class="live-radar-dot" style="width:6px;height:6px;"></span> Medical AI Copilot � Online</small>
+      </div>
+    </div>
+    <div class="referbot-controls">
+      <button class="referbot-ctrl-btn" title="Minimize" onclick="document.getElementById('referbotWindow').classList.add('hidden')">�</button>
+      <button class="referbot-ctrl-btn" title="Close" id="referbotClose">&#10006;</button>
+    </div>
+  </div>
+
+  <!-- Scenario Banner -->
+  <div class="referbot-scenario-banner">
+    <span class="scenario-icon">&#128269;</span>
+    <div>
+      <b>Patient Search Mode</b>
+      <small>Ask about beds, referrals, or hospital availability</small>
+    </div>
+    <span class="scenario-live">LIVE</span>
+  </div>
+
+  <!-- Messages List -->
+  <div class="referbot-messages" id="referbotMessages">
+
+    <!-- Bot Welcome -->
+    <div class="bot-msg">
+      <div class="bot-msg-head">
+        <span class="bot-msg-avatar">&#129302;</span>
+        <span class="bot-msg-name">ReferBot</span>
+        <span class="bot-msg-time">Now</span>
+      </div>
+      Hello! I'm <strong>ReferBot</strong> � your AI medical coordination assistant. &#10024;<br><br>
+      I can help you:
+      <ul>
+        <li>&#128719; Find available beds in the network</li>
+        <li>&#128680; Send emergency referral requests</li>
+        <li>&#128202; Check hospital capacity in real-time</li>
+        <li>&#128225; Broadcast SOS alerts to the network</li>
+      </ul>
+    </div>
+
+    <!-- Typing Indicator -->
+    <div class="bot-typing" id="botTyping" style="display:none;">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  </div>
+
+  <!-- Quick Suggestion Chips -->
+  <div class="referbot-chips" id="referbotChips">
+    <button class="bot-chip" onclick="rbSendChip(this)">&#128161; Find ICU beds</button>
+    <button class="bot-chip" onclick="rbSendChip(this)">&#128161; Emergency referral</button>
+    <button class="bot-chip" onclick="rbSendChip(this)">&#128161; Network status</button>
+    <button class="bot-chip" onclick="rbSendChip(this)">&#128161; Nearest hospital</button>
+    <button class="bot-chip" onclick="rbSendChip(this)">&#128161; Pending requests</button>
+  </div>
+
+  <!-- Input Row -->
+  <div class="referbot-input-row">
+    <button class="btn-bot-mic" title="Voice input (coming soon)" disabled>&#127897;</button>
+    <input type="text" id="referbotInput" placeholder="Ask ReferBot anything..." autocomplete="off" />
+    <button class="btn-bot-send" id="referbotSend" title="Send message">&#10148;</button>
+  </div>
+
+  <!-- Footer Note -->
+  <div class="referbot-footer-note">
+    &#8594; EVALUATION DEMO � AI responses are simulated for showcase purposes
+  </div>
+</div>
+
+<script src="sidebar-collapse.js"></script>
+<script src="home.js"></script>
+<script src="home-enhanced.js"></script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReferBridge | Bed Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="beds.css">
+<link rel="stylesheet" href="sidebar-collapse.css">
+<link rel="icon" type="image/png" href="assets/referbridge-icon.png">
+<link rel="apple-touch-icon" href="assets/referbridge-icon.png">
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <a href="dashboard.html" class="brand-mark">
+      <span class="brand-mark-icon"><img src="assets/referbridge-icon.png" alt="ReferBridge logo"></span>
+      <span class="brand-name">Refer<span>Bridge</span></span>
+    </a>
+
+    <nav class="nav-links">
+      <a href="home.html" class="nav-link" data-tooltip="Home"><span class="nav-icon">&#127968;</span><span>Home</span></a>
+      <a href="dashboard.html" class="nav-link" data-tooltip="Dashboard"><span class="nav-icon">&#128202;</span><span>Dashboard</span></a>
+      <a href="profile.html" class="nav-link" data-tooltip="Hospital Profile"><span class="nav-icon">&#127973;</span><span>Hospital Profile</span></a>
+      <a href="beds.html" class="nav-link active" data-tooltip="Bed Management"><span class="nav-icon">&#128719;</span><span>Bed Management</span></a>
+      <a href="requests.html" class="nav-link" data-tooltip="Incoming Requests"><span class="nav-icon">&#128229;</span><span>Incoming Requests</span></a>
+      <a href="network.html" class="nav-link" data-tooltip="Hospital Network"><span class="nav-icon">&#127760;</span><span>Hospital Network</span></a>
+      <a href="analytics.html" class="nav-link" data-tooltip="Analytics"><span class="nav-icon">&#128200;</span><span>Analytics</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="themeToggle" class="theme-toggle-inline" title="Switch between Dark and Light mode">
+        <span id="themeIcon">&#127769;</span> <span>Theme</span>
+      </button>
+      <button id="logoutBtn" class="logout-btn" title="Sign out of ReferBridge">
+        <span>&#128682;</span> <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar fade-in-up">
+      <div>
+        <p class="eyebrow">CAPACITY MANAGEMENT</p>
+        <h1>Live Bed &amp; Ward Allocation</h1>
+      </div>
+      <div class="topbar-quick-actions">
+        <button type="button" class="topbar-mic-btn" id="topbarMicBtn" title="Ask AI Assistant by voice" aria-label="Voice Assistant">&#127897;<span class="mic-label">Speak</span></button>
+        <button type="button" class="topbar-cmd-chip" title="Open Quick Command Palette (Ctrl + K)">
+          <span>Quick Actions</span> <kbd>Ctrl K</kbd>
+        </button>
+        <div class="status-badge" id="hospitalStatusBadge">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Available</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hospital Overview Banner -->
+    <section class="hospital-overview fade-in-up">
+      <div class="overview-main">
+        <div class="overview-icon">&#128719;</div>
+        <div>
+          <p class="overview-kicker">LIVE CAPACITY STATUS</p>
+          <h2 id="bedsHospitalName">ReferBridge General Hospital</h2>
+          <p class="overview-meta">
+            <span id="bedsHospitalLocation">Sector 12, Chandigarh</span>
+            <span>�</span>
+            <span id="bedsHospitalSpecialties">Cardiology, Neurology, Orthopedics</span>
+          </p>
+        </div>
+      </div>
+      <div class="overview-stats">
+        <div class="ov-stat-card"><span>General Capacity</span><b id="overviewGeneralTotal">0</b></div>
+        <div class="ov-stat-card"><span>ICU Capacity</span><b id="overviewICUTotal">0</b></div>
+        <div class="ov-stat-card"><span>Available Now</span><b class="green" id="overviewAvailable">0 beds</b></div>
+        <div class="ov-stat-card"><span>Last Synced</span><b class="updated" id="overviewUpdated">Just now</b></div>
+      </div>
+    </section>
+
+    <!-- Stepper Adjusters -->
+    <section class="beds-grid fade-in-up">
+      <!-- General Beds Stepper -->
+      <div class="bed-card">
+        <div class="bed-card-head">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px;">&#128229;</span>
+            <h3>General Ward Beds</h3>
+          </div>
+          <span class="bed-total" id="generalTotalLabel">Total: 0</span>
+        </div>
+
+        <div class="counter-row">
+          <button class="counter-btn minus btn-ripple" id="generalMinus" aria-label="Decrease occupied general beds">-</button>
+          <div class="counter-value">
+            <span id="generalOccupied">0</span>
+            <p>Occupied</p>
+          </div>
+          <button class="counter-btn plus btn-ripple" id="generalPlus" aria-label="Increase occupied general beds">+</button>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-fill" id="generalBar"></div>
+        </div>
+
+        <div class="bed-stats-row">
+          <div>
+            <p class="bed-stat-label">Available</p>
+            <p class="bed-stat-value green" id="generalAvailable">0</p>
+          </div>
+          <div>
+            <p class="bed-stat-label">Occupied</p>
+            <p class="bed-stat-value" id="generalOccupiedEcho">0</p>
+          </div>
+          <div>
+            <p class="bed-stat-label">Total</p>
+            <p class="bed-stat-value" id="generalTotalEcho">0</p>
+          </div>
+        </div>
+
+        <p id="generalLimitMsg" class="limit-msg" hidden></p>
+      </div>
+
+      <!-- ICU Beds Stepper -->
+      <div class="bed-card icu">
+        <div class="bed-card-head">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px; color:var(--rb-cyan);">?</span>
+            <h3>ICU / Critical Beds</h3>
+          </div>
+          <span class="bed-total" id="icuTotalLabel">Total: 0</span>
+        </div>
+
+        <div class="counter-row">
+          <button class="counter-btn minus btn-ripple" id="icuMinus" aria-label="Decrease occupied ICU beds">-</button>
+          <div class="counter-value">
+            <span id="icuOccupied">0</span>
+            <p>Occupied</p>
+          </div>
+          <button class="counter-btn plus btn-ripple" id="icuPlus" aria-label="Increase occupied ICU beds">+</button>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-fill cyan" id="icuBar"></div>
+        </div>
+
+        <div class="bed-stats-row">
+          <div>
+            <p class="bed-stat-label">Available</p>
+            <p class="bed-stat-value cyan" id="icuAvailable">0</p>
+          </div>
+          <div>
+            <p class="bed-stat-label">Occupied</p>
+            <p class="bed-stat-value" id="icuOccupiedEcho">0</p>
+          </div>
+          <div>
+            <p class="bed-stat-label">Total</p>
+            <p class="bed-stat-value" id="icuTotalEcho">0</p>
+          </div>
+        </div>
+
+        <p id="icuLimitMsg" class="limit-msg" hidden></p>
+      </div>
+    </section>
+
+    <p class="save-hint" id="saveHint">? Capacity changes save automatically and broadcast live to partner hospitals.</p>
+
+    <!-- Overall Specialty Metrics -->
+    <section class="capacity-overview fade-in-up">
+      <div class="capacity-card">
+        <div class="capacity-icon">??</div>
+        <div>
+          <span>Total General Beds</span>
+          <strong id="totalGeneralBeds">120</strong>
+        </div>
+      </div>
+      <div class="capacity-card">
+        <div class="capacity-icon icu">?</div>
+        <div>
+          <span>Total ICU Beds</span>
+          <strong id="totalIcuBeds">20</strong>
+        </div>
+      </div>
+      <div class="capacity-card">
+        <div class="capacity-icon picu">?</div>
+        <div>
+          <span>Total PICU Beds</span>
+          <strong id="totalPicuBeds">10</strong>
+        </div>
+      </div>
+      <div class="capacity-card availability">
+        <div>
+          <span>Overall Available</span>
+          <strong id="overallAvailable">0</strong>
+        </div>
+        <small id="overallStatus"><span class="live-radar-dot"></span> Live capacity synced</small>
+      </div>
+    </section>
+
+    <!-- Interactive Bed Theatre Map -->
+    <section class="theatre-panel fade-in-up">
+      <div class="theatre-heading">
+        <div>
+          <p class="eyebrow">THEATRE MAP MATRIX</p>
+          <h2>Interactive Specialty Bed Grid</h2>
+          <p>Click any bed to inspect patient vitals or toggle availability status.</p>
+        </div>
+        <div class="theatre-legend">
+          <span><i class="legend-dot available"></i> Available</span>
+          <span><i class="legend-dot occupied"></i> Occupied</span>
+          <span><i class="legend-dot reserved"></i> Reserved / Sanitizing</span>
+        </div>
+      </div>
+
+      <div class="department-tabs" id="departmentTabs">
+        <button class="department-tab active" data-dept="icu" type="button">ICU</button>
+        <button class="department-tab" data-dept="picu" type="button">PICU</button>
+        <button class="department-tab" data-dept="general" type="button">General Ward</button>
+        <button class="department-tab" data-dept="trauma" type="button">Trauma</button>
+        <button class="department-tab" data-dept="neonatology" type="button">Neonatology</button>
+      </div>
+
+      <div class="theatre-summary" id="theatreSummary"></div>
+      <div class="bed-theatre" id="bedTheatre"></div>
+
+      <div class="bed-details" id="bedDetails">
+        <div class="bed-detail-icon">??</div>
+        <div>
+          <strong>Select a bed from the grid above</strong>
+          <span>Click any bed unit to view live patient assignment, vital telemetry, and change allocation status.</span>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Modal: Interactive Bed Inspector & Action -->
+<div id="bedActionModal" class="rb-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalBedTitle">
+  <div class="rb-modal">
+    <div class="rb-modal-head">
+      <h3 id="modalBedTitle">Bed Unit Inspector</h3>
+      <button type="button" class="rb-modal-close-btn" onclick="closeModal('bedActionModal')" aria-label="Close modal">�</button>
+    </div>
+    <div class="rb-modal-body" id="modalBedBody"></div>
+    <div class="rb-modal-foot">
+      <button type="button" class="btn-ghost" onclick="closeModal('bedActionModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="sidebar-collapse.js"></script>
+<script src="beds.js"></script>
+</body>
+</html>

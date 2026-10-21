@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReferBridge | Hospital Registration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="signup.css">
+<link rel="stylesheet" href="sidebar-collapse.css">
+<link rel="icon" type="image/png" href="assets/referbridge-icon.png">
+<link rel="apple-touch-icon" href="assets/referbridge-icon.png">
+</head>
+<body>
+
+<button id="themeToggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle light / dark mode">
+        <span id="themeIcon">&#127769;</span> <span>Theme</span>
+      </button>
+
+<div class="page">
+  <div class="brand-panel">
+    <div class="brand-content fade-in-up">
+      <a href="index.html" class="brand-mark">
+        <span class="brand-mark-icon">
+          <img src="assets/referbridge-icon.png" alt="ReferBridge logo" style="width:24px;height:24px;object-fit:contain;">
+        </span>
+        <span class="brand-name">Refer<span>Bridge</span></span>
+      </a>
+
+      <div class="live-pill" style="margin-bottom: 20px;">
+        <span class="live-radar-dot"></span>
+        <span>HOSPITAL ONBOARDING PORTAL</span>
+      </div>
+
+      <h1 class="brand-tagline">Bring your medical facility onto the referral network</h1>
+      <p class="brand-sub">Register to coordinate bed capacity, triage critical patient transfers, and access partner hospital specialties in real-time.</p>
+
+      <ul class="checklist">
+        <li><span class="check-icon">✓</span> <span>Track general, ICU &amp; PICU capacity dynamically</span></li>
+        <li><span class="check-icon">✓</span> <span>Triage &amp; accept incoming referral transfers</span></li>
+        <li><span class="check-icon">✓</span> <span>Access live directory of verified partner hospitals</span></li>
+        <li><span class="check-icon">✓</span> <span>Monitor hospital demand &amp; 7-day flow analytics</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-card fade-in-up">
+      <div class="auth-card-top">
+        <p class="eyebrow">CREATE ACCOUNT</p>
+        <button type="button" id="sampleDataBtn" class="btn-sample-fill" title="Fill sample hospital data for evaluation testing">⚡ Quick Sample Fill</button>
+      </div>
+
+      <h2 class="auth-title">Register Hospital</h2>
+      <p class="auth-subtitle">Sets up your administrator credentials and hospital capacity profile.</p>
+
+      <div id="errorBox" class="error-box" hidden>
+        <span>⚠</span>
+        <span id="errorText"></span>
+      </div>
+      <div id="infoBox" class="info-box" hidden>
+        <span>✓</span>
+        <span id="infoText"></span>
+      </div>
+
+      <form id="signupForm" novalidate>
+        <div class="field">
+          <label for="adminName">Admin / Medical Director Name</label>
+          <input type="text" id="adminName" placeholder="e.g. Dr. Priya Sharma" required>
+        </div>
+
+        <div class="field">
+          <label for="hospitalName">Hospital / Facility Name</label>
+          <input type="text" id="hospitalName" placeholder="e.g. Sunrise Multispecialty Hospital" required>
+        </div>
+
+        <div class="field">
+          <label for="email">Official Admin Email</label>
+          <input type="email" id="email" placeholder="admin@sunrisehospital.com" required>
+        </div>
+
+        <div class="field-split">
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="At least 6 characters" required>
+          </div>
+          <div class="field">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" placeholder="Re-enter password" required>
+          </div>
+        </div>
+
+        <!-- Password Strength Meter -->
+        <div class="strength-meter-wrap" id="strengthWrap" hidden>
+          <div class="strength-labels">
+            <span>Password Security:</span>
+            <strong id="strengthLabel">Weak</strong>
+          </div>
+          <div class="strength-track">
+            <div class="strength-bar" id="strengthBar"></div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary btn-ripple">
+          <span>Complete Registration</span>
+          <span style="font-size:16px;">→</span>
+        </button>
+      </form>
+
+      <p class="switch-auth">Already registered? <a href="index.html">Log in here</a></p>
+    </div>
+  </div>
+</div>
+
+<script src="sidebar-collapse.js"></script>
+<script src="signup.js"></script>
+</body>
+</html>

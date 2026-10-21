@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1000">
+<defs>
+ <linearGradient id="ecg" x1="0" x2="1">
+  <stop stop-color="#18c8ff" stop-opacity=".10"/>
+  <stop offset=".5" stop-color="#20e4cf" stop-opacity=".95"/>
+  <stop offset="1" stop-color="#18c8ff" stop-opacity=".12"/>
+ </linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g stroke="#42c9ff" stroke-opacity=".20" stroke-width="1.2" fill="none">
+ <path d="M620 120L790 205L980 110L1125 245L970 340L780 315L620 120"/>
+ <path d="M790 205L780 315M980 110L970 340M1125 245L970 340"/>
+ <path d="M500 405L680 485L780 315M680 485L970 340"/>
+ <path d="M1040 150L1280 90L1390 210L1230 300"/>
+</g>
+<g fill="#4bd8ff" opacity=".65">
+ <circle cx="620" cy="120" r="3"/><circle cx="790" cy="205" r="4"/><circle cx="980" cy="110" r="3"/>
+ <circle cx="1125" cy="245" r="4"/><circle cx="970" cy="340" r="4"/><circle cx="780" cy="315" r="3"/>
+ <circle cx="500" cy="405" r="3"/><circle cx="680" cy="485" r="4"/><circle cx="1040" cy="150" r="3"/>
+ <circle cx="1280" cy="90" r="4"/><circle cx="1390" cy="210" r="3"/><circle cx="1230" cy="300" r="4"/>
+</g>
+<path d="M0 775H330L355 775L378 750L402 788L430 775H650L675 775L700 720L725 835L754 775H965L990 775L1015 750L1040 788L1068 775H1280L1305 775L1330 720L1355 835L1384 775H1590L1615 775L1640 750L1665 788L1695 775H1800"
+ fill="none" stroke="url(#ecg)" stroke-width="4" filter="url(#glow)"/>
+<path d="M0 830 C280 790 520 870 790 820 S1290 790 1800 842" fill="none" stroke="#20d9d1" stroke-opacity=".12" stroke-width="2"/>
+</svg>

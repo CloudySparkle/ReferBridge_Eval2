@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReferBridge | Hospital Network Directory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="network.css">
+<link rel="stylesheet" href="sidebar-collapse.css">
+<link rel="icon" type="image/png" href="assets/referbridge-icon.png">
+<link rel="apple-touch-icon" href="assets/referbridge-icon.png">
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <a href="dashboard.html" class="brand-mark">
+      <span class="brand-mark-icon"><img src="assets/referbridge-icon.png" alt="ReferBridge logo"></span>
+      <span class="brand-name">Refer<span>Bridge</span></span>
+    </a>
+
+    <nav class="nav-links">
+      <a href="home.html" class="nav-link" data-tooltip="Home"><span class="nav-icon">&#127968;</span><span>Home</span></a>
+      <a href="dashboard.html" class="nav-link" data-tooltip="Dashboard"><span class="nav-icon">&#128202;</span><span>Dashboard</span></a>
+      <a href="profile.html" class="nav-link" data-tooltip="Hospital Profile"><span class="nav-icon">&#127973;</span><span>Hospital Profile</span></a>
+      <a href="beds.html" class="nav-link" data-tooltip="Bed Management"><span class="nav-icon">&#128719;</span><span>Bed Management</span></a>
+      <a href="requests.html" class="nav-link" data-tooltip="Incoming Requests"><span class="nav-icon">&#128229;</span><span>Incoming Requests</span></a>
+      <a href="network.html" class="nav-link active" data-tooltip="Hospital Network"><span class="nav-icon">&#127760;</span><span>Hospital Network</span></a>
+      <a href="analytics.html" class="nav-link" data-tooltip="Analytics"><span class="nav-icon">&#128200;</span><span>Analytics</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="themeToggle" class="theme-toggle-inline" title="Switch between Dark and Light mode">
+        <span id="themeIcon">&#127769;</span> <span>Theme</span>
+      </button>
+      <button id="logoutBtn" class="logout-btn" title="Sign out of ReferBridge">
+        <span>&#128682;</span> <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar fade-in-up">
+      <div>
+        <p class="eyebrow">REGIONAL ALLIANCE DIRECTORY</p>
+        <h1>Verified Hospital Network</h1>
+      </div>
+      <div class="topbar-quick-actions">
+        <button type="button" class="topbar-mic-btn" id="topbarMicBtn" title="Ask AI Assistant by voice" aria-label="Voice Assistant">&#127897;<span class="mic-label">Speak</span></button>
+        <button type="button" class="topbar-cmd-chip" title="Open Quick Command Palette (Ctrl + K)">
+          <span>Quick Actions</span> <kbd>Ctrl K</kbd>
+        </button>
+        <div class="status-badge" id="hospitalStatusBadge">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Available</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Search, Sort & Status Filters -->
+    <section class="controls fade-in-up">
+      <div class="search-box">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" id="search" placeholder="Search by hospital name, specialty, or location..." aria-label="Search hospitals">
+      </div>
+
+      <div class="filter-group">
+        <select id="statusFilter" aria-label="Filter by bed capacity status">
+          <option value="all">All Statuses</option>
+          <option value="Available">&#9989; Available</option>
+          <option value="Limited">?? Limited Beds</option>
+          <option value="Full">?? Capacity Full</option>
+        </select>
+
+        <select id="sortFilter" aria-label="Sort hospitals">
+          <option value="name">Sort by Name (A-Z)</option>
+          <option value="distance">Sort by Distance</option>
+          <option value="beds">Sort by Available Beds</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Specialty Quick Filter Pills -->
+    <div class="specialty-pills-wrap fade-in-up">
+      <button type="button" class="spec-pill active" data-spec="all">All Specialties</button>
+      <button type="button" class="spec-pill" data-spec="Cardiology">Cardiology</button>
+      <button type="button" class="spec-pill" data-spec="Neurology">Neurology</button>
+      <button type="button" class="spec-pill" data-spec="Orthopedics">Orthopedics</button>
+      <button type="button" class="spec-pill" data-spec="Pediatrics">Pediatrics</button>
+      <button type="button" class="spec-pill" data-spec="Trauma">Trauma &amp; Surgery</button>
+      <button type="button" class="spec-pill" data-spec="Nephrology">Nephrology</button>
+    </div>
+
+    <!-- Hospital Grid -->
+    <section class="hospital-grid fade-in-up" id="hospitalGrid"></section>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState" hidden>
+      <div class="empty-icon">??</div>
+      <h3>No partner hospitals found</h3>
+      <p>Try adjusting your search query or selecting a different specialty filter.</p>
+    </div>
+  </main>
+</div>
+
+<!-- Modal: Initiate Referral Transfer Request -->
+<div id="transferModal" class="rb-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalTransferTitle">
+  <div class="rb-modal">
+    <div class="rb-modal-head">
+      <div>
+        <span class="live-tag" style="margin-bottom:4px; display:inline-block;">EMERGENCY OUTBOUND</span>
+        <h3 id="modalTransferTitle">Initiate Referral Transfer</h3>
+      </div>
+      <button type="button" class="rb-modal-close-btn" onclick="closeModal('transferModal')" aria-label="Close modal">�</button>
+    </div>
+    <div class="rb-modal-body" id="modalTransferBody"></div>
+    <div class="rb-modal-foot">
+      <button type="button" class="btn-ghost" onclick="closeModal('transferModal')">Cancel</button>
+      <button type="button" class="btn-primary" id="btnSendTransfer">Broadcast Referral Request ?</button>
+    </div>
+  </div>
+</div>
+
+<script src="sidebar-collapse.js"></script>
+<script src="network.js"></script>
+</body>
+</html>

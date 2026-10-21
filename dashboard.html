@@ -1,0 +1,513 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReferBridge | Operations Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dashboard.css">
+<link rel="stylesheet" href="sidebar-collapse.css">
+<link rel="icon" type="image/png" href="assets/referbridge-icon.png">
+<link rel="apple-touch-icon" href="assets/referbridge-icon.png">
+<style>
+.live-sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20,228,184,0.1);
+  border: 1px solid rgba(20,228,184,0.3);
+  color: var(--rb-teal, #14e4b8);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.live-sync-badge .live-dot {
+  width: 6px;
+  height: 6px;
+  background: #14e4b8;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #14e4b8;
+  animation: pulse-live 2s infinite ease-in-out;
+}
+@keyframes pulse-live {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+[data-theme="light"] .live-sync-badge {
+  background: rgba(10,138,110,0.1);
+  border-color: rgba(10,138,110,0.3);
+  color: #0a8a6e;
+}
+[data-theme="light"] .live-sync-badge .live-dot {
+  background: #0a8a6e;
+  box-shadow: 0 0 6px #0a8a6e;
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <a href="dashboard.html" class="brand-mark">
+      <span class="brand-mark-icon"><img src="assets/referbridge-icon.png" alt="ReferBridge logo"></span>
+      <span class="brand-name">Refer<span>Bridge</span></span>
+    </a>
+
+    <nav class="nav-links">
+      <a href="home.html" class="nav-link" data-tooltip="Home"><span class="nav-icon">&#127968;</span><span>Home</span></a>
+      <a href="dashboard.html" class="nav-link active" data-tooltip="Dashboard"><span class="nav-icon">&#128202;</span><span>Dashboard</span></a>
+      <a href="profile.html" class="nav-link" data-tooltip="Hospital Profile"><span class="nav-icon">&#127973;</span><span>Hospital Profile</span></a>
+      <a href="beds.html" class="nav-link" data-tooltip="Bed Management"><span class="nav-icon">&#128719;</span><span>Bed Management</span></a>
+      <a href="requests.html" class="nav-link" data-tooltip="Incoming Requests"><span class="nav-icon">&#128229;</span><span>Incoming Requests</span></a>
+      <a href="network.html" class="nav-link" data-tooltip="Hospital Network"><span class="nav-icon">&#127760;</span><span>Hospital Network</span></a>
+      <a href="analytics.html" class="nav-link" data-tooltip="Analytics"><span class="nav-icon">&#128200;</span><span>Analytics</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="themeToggle" class="theme-toggle-inline" title="Switch between Dark and Light mode">
+        <span id="themeIcon">&#127769;</span> <span>Theme</span>
+      </button>
+      <button id="logoutBtn" class="logout-btn" title="Sign out of ReferBridge">
+        <span>&#128682;</span> <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar fade-in-up">
+      <div>
+        <p class="eyebrow">COMMAND HUB / OVERVIEW</p>
+        <h1 id="hospitalNameHeading">Dashboard</h1>
+      </div>
+      <div class="topbar-quick-actions">
+        <button type="button" class="topbar-mic-btn" id="topbarMicBtn" title="Ask AI Assistant by voice" aria-label="Voice Assistant">&#127897;<span class="mic-label">Speak</span></button>
+        <button type="button" class="topbar-cmd-chip" title="Open Quick Command Palette (Ctrl + K)">
+          <span>Quick Actions</span> <kbd>Ctrl K</kbd>
+        </button>
+        <div class="admin-chip">
+          <span class="admin-avatar" id="adminAvatar">A</span>
+          <div>
+            <div class="admin-name" id="adminNameText">Admin</div>
+            <div class="admin-email" id="adminEmailText">admin@referbridge.com</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hospital Info & Quick Actions Banner -->
+    <section class="hospital-info-card fade-in-up">
+      <div class="hospital-info-main">
+        <div class="status-badge" id="hospitalStatusBadge">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Available</span>
+        </div>
+        <h2 id="infoHospitalName">ReferBridge General Hospital</h2>
+        <p class="hospital-meta">
+          <span id="infoLocation">Sector 12, Chandigarh</span>
+          <span class="meta-sep">�</span>
+          <span id="infoSpecialties">Cardiology, Neurology, Orthopedics</span>
+        </p>
+      </div>
+
+      <div class="info-actions">
+        <button type="button" id="btnSyncCapacity" class="btn-dash-action btn-ripple" title="Re-sync bed availability">
+          <span>&#8635; Sync Now</span>
+        </button>
+        <button type="button" id="btnExportReport" class="btn-dash-action btn-ripple" title="Export current hospital capacity report">
+          <span>&#128229; Export</span>
+        </button>
+        <a href="profile.html" class="btn-ghost btn-ripple">Edit Profile &#8594;</a>
+      </div>
+    </section>
+
+    <!-- -- Moving Referral Journey Marquee -- -->
+    <div class="dash-journey-marquee fade-in-up">
+      <span class="djm-label">LIVE REFERRAL FLOW</span>
+      <div class="djm-scroll">
+        <div class="djm-inner">
+          <span class="djm-tick">&#9200; Patient arrives at City Hospital &#8594; ICU Full</span>
+          <span class="djm-tick">&#10060; Hospital cannot accommodate &#8594; Referral initiated</span>
+          <span class="djm-tick">&#128269; ReferBridge scanning 8 partner hospitals...</span>
+          <span class="djm-tick">&#9989; Match: Sunrise Multispecialty � 6 ICU beds available</span>
+          <span class="djm-tick">&#10145;&#65039; Transfer request sent &#8594; Hospital connects in 45 sec</span>
+          <span class="djm-tick">&#127973; REQ-447 Accepted � Patient admitted � ?? Care delivered in 12 min</span>
+          <span class="djm-tick">&#9200; Patient arrives at City Hospital &#8594; ICU Full</span>
+          <span class="djm-tick">&#10060; Hospital cannot accommodate &#8594; Referral initiated</span>
+          <span class="djm-tick">&#128269; ReferBridge scanning 8 partner hospitals...</span>
+          <span class="djm-tick">&#9989; Match: Sunrise Multispecialty � 6 ICU beds available</span>
+          <span class="djm-tick">&#10145;&#65039; Transfer request sent &#8594; Hospital connects in 45 sec</span>
+          <span class="djm-tick">&#127973; REQ-447 Accepted � Patient admitted � ?? Care delivered in 12 min</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bed Capacity Statistics Grid -->
+    <section class="stat-grid fade-in-up">
+      <div class="stat-card">
+        <div class="stat-header">
+          <p class="stat-label">Total Beds</p>
+          <span class="stat-icon-mini">&#127973;</span>
+        </div>
+        <p class="stat-number" id="statTotalBeds">0</p>
+        <span class="stat-sub">Configured capacity</span>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <p class="stat-label">Occupied Beds</p>
+          <span class="stat-icon-mini">&#127973;</span>
+        </div>
+        <p class="stat-number" id="statOccupiedBeds">0</p>
+        <span class="stat-sub">Inpatient admissions</span>
+      </div>
+
+      <div class="stat-card accent-green">
+        <div class="stat-header">
+          <p class="stat-label">Available Beds</p>
+          <span class="stat-icon-mini" style="color:var(--rb-green)">&#128994;</span>
+        </div>
+        <p class="stat-number" id="statAvailableBeds">0</p>
+        <span class="stat-sub" style="color:var(--rb-green)">Open for referral intake</span>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <p class="stat-label">Total ICU Beds</p>
+          <span class="stat-icon-mini">&#128719;</span>
+        </div>
+        <p class="stat-number" id="statTotalICU">0</p>
+        <span class="stat-sub">Critical care units</span>
+      </div>
+
+      <div class="stat-card accent-cyan">
+        <div class="stat-header">
+          <p class="stat-label">Available ICU Beds</p>
+          <span class="stat-icon-mini" style="color:var(--rb-cyan)">&#128309;</span>
+        </div>
+        <p class="stat-number" id="statAvailableICU">0</p>
+        <span class="stat-sub" style="color:var(--rb-cyan)">Ventilator / ICU ready</span>
+      </div>
+    </section>
+
+    <!-- Referral Status Grid -->
+    <section class="section-block fade-in-up">
+      <div class="section-head-row">
+        <h3 class="section-title">Referral Statistics</h3>
+        <a href="requests.html" class="section-link">View All Requests &#8594;</a>
+      </div>
+      <div class="referral-grid">
+        <div class="referral-card">
+          <p class="referral-number" id="statIncoming">0</p>
+          <p class="referral-label">Total Incoming</p>
+          <span class="referral-badge">This Session</span>
+        </div>
+        <div class="referral-card yellow">
+          <p class="referral-number" id="statPending">0</p>
+          <p class="referral-label">Pending Triage</p>
+          <span class="referral-badge" style="background:var(--rb-yellow-soft); color:var(--rb-yellow);">Awaiting Action</span>
+        </div>
+        <div class="referral-card green">
+          <p class="referral-number" id="statAccepted">0</p>
+          <p class="referral-label">Accepted Referrals</p>
+          <span class="referral-badge" style="background:var(--rb-green-soft); color:var(--rb-green);">Transfers Inbound</span>
+        </div>
+        <div class="referral-card red">
+          <p class="referral-number" id="statRejected">0</p>
+          <p class="referral-label">Rejected Requests</p>
+          <span class="referral-badge" style="background:var(--rb-red-soft); color:var(--rb-red);">Rerouted</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Event Feed & Quick Action Launchers -->
+    <div class="dash-split-grid fade-in-up">
+      <!-- Live Activity Log -->
+      <section class="activity-panel">
+        <div class="activity-head">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="live-radar-dot"></span>
+            <h4>Live Network Activity</h4>
+          </div>
+          <span class="live-tag">LIVE FEED</span>
+        </div>
+        <div class="activity-list" id="activityFeed">
+          <div class="activity-item">
+            <span class="activity-icon green">&#10004;</span>
+            <div>
+              <p><strong>REQ-101 (Cardiology)</strong> marked as Accepted</p>
+              <small>Referred from Lotus Care Hospital � 09:12 AM</small>
+            </div>
+          </div>
+          <div class="activity-item">
+            <span class="activity-icon yellow">&#9888;</span>
+            <div>
+              <p><strong>REQ-103 (Neurology)</strong> transfer request received</p>
+              <small>Patient PT-2293 � Suspected Ischemic Stroke � 10:05 AM</small>
+            </div>
+          </div>
+          <div class="activity-item">
+            <span class="activity-icon cyan">&#128712;</span>
+            <div>
+              <p><strong>Capacity Update:</strong> ICU Beds open: 6 available</p>
+              <small>Automatic synchronization completed</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Navigation Grid -->
+      <section class="quick-links-panel">
+        <h4 style="font-family:var(--font-display); font-size:16px; margin-bottom:14px;">Quick Management</h4>
+        <div class="quick-links">
+          <a href="beds.html" class="quick-card btn-ripple">
+            <span class="quick-icon">&#128719;</span><div><h4>Manage Beds</h4>
+              <p>Update occupancy and ICU capacity</p>
+            </div>
+          </a>
+          <a href="requests.html" class="quick-card btn-ripple">
+            <span class="quick-icon">&#128229;</span><div><h4>Review Requests</h4>
+              <p>Accept or reject incoming referrals</p>
+            </div>
+          </a>
+          <a href="network.html" class="quick-card btn-ripple">
+            <span class="quick-icon">&#127760;</span><div><h4>Hospital Network</h4>
+              <p>Browse partner hospital directory</p>
+            </div>
+          </a>
+          <a href="analytics.html" class="quick-card btn-ripple">
+            <span class="quick-icon">&#128200;</span><div><h4>View Analytics</h4>
+              <p>Track performance over time</p>
+            </div>
+          </a>
+        </div>
+      </section>
+    </div>
+
+  </main>
+</div>
+
+<!-- --- REFERBOT AI CHATBOT STRUCTURE (Evaluation) --- -->
+<button class="referbot-launcher" id="referbotLauncher" title="ReferBot � AI Medical Copilot">
+  <span class="referbot-sparkle">&#10024;</span>
+  <span>ReferBot AI</span>
+</button>
+<div class="referbot-window hidden" id="referbotWindow">
+  <div class="referbot-header">
+    <div class="referbot-profile">
+      <div class="referbot-avatar">&#129302;</div>
+      <div>
+        <b>ReferBot</b>
+        <small><span class="live-radar-dot" style="width:6px;height:6px;"></span> Medical AI Copilot � Online</small>
+      </div>
+    </div>
+    <div class="referbot-controls">
+      <button class="referbot-ctrl-btn" onclick="document.getElementById('referbotWindow').classList.add('hidden')">�</button>
+      <button class="referbot-ctrl-btn" id="referbotClose">&#10006;</button>
+    </div>
+  </div>
+  <div class="referbot-messages" id="referbotMessages">
+    <div class="bot-msg">
+      Hello! I'm <strong>ReferBot</strong> � your AI medical coordination assistant.<br><br>
+      Ask me about bed availability, referrals, or hospital status.
+    </div>
+  </div>
+  <div class="referbot-chips">
+    <button class="bot-chip">&#128161; ICU availability</button>
+    <button class="bot-chip">&#128161; Bed stats</button>
+    <button class="bot-chip">&#128161; Emergency</button>
+    <button class="bot-chip">&#128161; Network status</button>
+  </div>
+  <div class="referbot-input-row">
+    <input type="text" id="referbotInput" placeholder="Ask ReferBot anything...">
+    <button class="btn-bot-send" id="referbotSend">&#10148;</button>
+  </div>
+  <div class="referbot-footer-note" style="padding:7px 16px;text-align:center;font:600 9.5px var(--font-mono);letter-spacing:.06em;color:var(--rb-text-faint);border-top:1px solid var(--rb-border);">
+    ? EVALUATION DEMO � AI responses simulated
+  </div>
+</div>
+
+<style>
+/* Dashboard - Journey marquee banner */
+.dash-journey-marquee {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--rb-border-glow);
+  border-radius: var(--rb-radius-full);
+  background: var(--rb-panel);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+}
+.djm-label {
+  flex-shrink: 0;
+  font: 700 9px var(--font-mono);
+  letter-spacing: 0.14em;
+  color: var(--rb-teal);
+  padding: 3px 10px;
+  border: 1px solid rgba(20,228,184,.35);
+  border-radius: var(--rb-radius-full);
+  background: rgba(20,228,184,.08);
+}
+.djm-scroll { flex:1; overflow:hidden; }
+.djm-inner {
+  display: flex;
+  gap: 40px;
+  width: max-content;
+  animation: djmRoll 24s linear infinite;
+  white-space: nowrap;
+}
+@keyframes djmRoll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.djm-tick { font: 600 11px var(--font-mono); color: var(--rb-text-muted); }
+
+/* Referbot reused styles on other pages */
+.referbot-launcher {
+  position: fixed; bottom: 26px; right: 26px; z-index: 99990;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 20px; border-radius: var(--rb-radius-full);
+  background: linear-gradient(135deg, #14e4b8, #22c8ff 45%, #8b6aff);
+  color: #041822; border: 1px solid rgba(255,255,255,.35);
+  box-shadow: 0 10px 30px rgba(0,0,0,.4), 0 0 25px rgba(34,200,255,.35);
+  cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 13.5px;
+  transition: all .25s cubic-bezier(.16,1,.3,1);
+  animation: refGlow 3.5s ease-in-out infinite;
+}
+@keyframes refGlow {
+  0%,100% { box-shadow: 0 10px 30px rgba(0,0,0,.4), 0 0 20px rgba(34,200,255,.3); }
+  50%      { box-shadow: 0 10px 30px rgba(0,0,0,.4), 0 0 40px rgba(139,106,255,.5); }
+}
+.referbot-launcher:hover { transform: translateY(-4px) scale(1.06); }
+.referbot-sparkle { font-size: 18px; animation: rbFloat 2s ease-in-out infinite; }
+.referbot-window {
+  position: fixed; bottom: 90px; right: 26px;
+  width: min(440px, calc(100vw - 32px)); height: min(560px, 80vh);
+  background: var(--rb-panel-solid); border: 1px solid var(--rb-border-glow);
+  border-radius: var(--rb-radius-lg);
+  box-shadow: 0 30px 80px rgba(0,0,0,.65), 0 0 40px rgba(34,200,255,.2);
+  backdrop-filter: blur(28px); z-index: 99992;
+  display: flex; flex-direction: column; overflow: hidden;
+  animation: rbModalPop .3s cubic-bezier(.16,1,.3,1) forwards;
+}
+.referbot-window.hidden { display: none !important; }
+.referbot-header {
+  padding: 16px 18px;
+  background: linear-gradient(90deg, rgba(20,228,184,.14), rgba(34,200,255,.1));
+  border-bottom: 1px solid var(--rb-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.referbot-profile { display: flex; align-items: center; gap: 10px; }
+.referbot-avatar {
+  width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--rb-teal), var(--rb-purple));
+  color: #041822; font-weight: 800; font-size: 18px;
+}
+.referbot-profile b { display: block; font-size: 14px; font-family: var(--font-display); }
+.referbot-profile small { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--rb-green); font-family: var(--font-mono); }
+.referbot-controls { display: flex; align-items: center; gap: 6px; }
+.referbot-ctrl-btn {
+  background: rgba(255,255,255,.06); border: 1px solid var(--rb-border);
+  color: var(--rb-text-muted); width: 28px; height: 28px;
+  border-radius: 6px; cursor: pointer; font-size: 13px;
+  display: grid; place-items: center; transition: all .15s ease;
+}
+.referbot-ctrl-btn:hover { color: var(--rb-text-main); border-color: var(--rb-cyan); }
+.referbot-messages {
+  flex: 1; padding: 16px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.bot-msg {
+  max-width: 90%; padding: 12px 16px; border-radius: 16px;
+  font-size: 13px; line-height: 1.55;
+  align-self: flex-start;
+  background: rgba(255,255,255,.05); border: 1px solid var(--rb-border);
+  color: var(--rb-text-main); border-bottom-left-radius: 4px;
+  animation: rbFadeInUp .25s ease forwards;
+}
+.bot-msg strong { color: var(--rb-teal); }
+.user-msg {
+  max-width: 90%; padding: 11px 14px; border-radius: 14px;
+  font-size: 13px; align-self: flex-end;
+  background: linear-gradient(135deg, var(--rb-teal), var(--rb-cyan));
+  color: #041822; font-weight: 600; border-bottom-right-radius: 4px;
+  animation: rbFadeInUp .25s ease forwards;
+}
+.referbot-chips {
+  padding: 10px 14px; display: flex; gap: 6px;
+  overflow-x: auto; border-top: 1px solid var(--rb-border);
+  background: rgba(0,0,0,.12); scrollbar-width: none;
+}
+.bot-chip {
+  padding: 6px 12px; border-radius: var(--rb-radius-full);
+  background: rgba(34,200,255,.08); border: 1px solid var(--rb-border);
+  color: var(--rb-cyan); font-size: 11px; font-weight: 600;
+  white-space: nowrap; cursor: pointer; transition: all .18s ease;
+}
+.bot-chip:hover { background: var(--rb-cyan); color: #041822; transform: scale(1.04); }
+.referbot-input-row {
+  padding: 12px 14px; border-top: 1px solid var(--rb-border);
+  display: flex; align-items: center; gap: 8px; background: var(--rb-panel-solid);
+}
+.referbot-input-row input {
+  flex: 1; padding: 10px 14px; border-radius: var(--rb-radius-sm);
+  border: 1px solid var(--rb-border); background: var(--rb-panel);
+  color: var(--rb-text-main); font-size: 13px; outline: none;
+}
+.referbot-input-row input:focus { border-color: var(--rb-cyan); }
+.btn-bot-send {
+  width: 36px; height: 36px; border-radius: var(--rb-radius-sm); border: 0;
+  display: grid; place-items: center; cursor: pointer; font-size: 14px;
+  background: linear-gradient(135deg, var(--rb-teal), var(--rb-cyan)); color: #041822;
+  transition: all .18s ease;
+}
+.btn-bot-send:hover { transform: scale(1.1); }
+.referbot-footer-note { padding:7px 16px; text-align:center; font:600 9.5px var(--font-mono); letter-spacing:.06em; color:var(--rb-text-faint); border-top:1px solid var(--rb-border); background:rgba(0,0,0,.2); }
+</style>
+
+<script>
+(function() {
+  var launcher = document.getElementById('referbotLauncher');
+  var win = document.getElementById('referbotWindow');
+  var closeBtn = document.getElementById('referbotClose');
+  var input = document.getElementById('referbotInput');
+  var sendBtn = document.getElementById('referbotSend');
+  var msgs = document.getElementById('referbotMessages');
+  if (launcher && win) {
+    launcher.addEventListener('click', function() { win.classList.toggle('hidden'); });
+    if (closeBtn) closeBtn.addEventListener('click', function() { win.classList.add('hidden'); });
+    function sendMsg(txt) {
+      if (!txt || !txt.trim()) return;
+      var ub = document.createElement('div');
+      ub.className = 'user-msg'; ub.textContent = txt.trim();
+      msgs.appendChild(ub); msgs.scrollTop = msgs.scrollHeight;
+      if (input) input.value = '';
+      setTimeout(function() {
+        var bb = document.createElement('div'); bb.className = 'bot-msg';
+        var responses = [
+          "Checking live capacity... ?? <strong>Sunrise Hospital</strong> has 6 ICU beds available.",
+          "Broadcasting to network... ? All 8 partner hospitals notified.",
+          "Network status: <strong>52 beds</strong> available across 8 facilities right now."
+        ];
+        bb.innerHTML = responses[Math.floor(Math.random()*responses.length)];
+        msgs.appendChild(bb); msgs.scrollTop = msgs.scrollHeight;
+      }, 1200);
+    }
+    if (sendBtn) sendBtn.addEventListener('click', function() { sendMsg(input ? input.value : ''); });
+    if (input) input.addEventListener('keydown', function(e) { if (e.key==='Enter') { e.preventDefault(); sendMsg(input.value); } });
+    document.querySelectorAll('.bot-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() { sendMsg(chip.textContent.trim()); });
+    });
+  }
+})();
+</script>
+
+<script src="sidebar-collapse.js"></script>
+<script src="dashboard.js"></script>
+</body>
+</html>

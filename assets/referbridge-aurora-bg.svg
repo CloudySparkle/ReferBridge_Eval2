@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <radialGradient id="a" cx="15%" cy="15%" r="55%">
+    <stop offset="0" stop-color="#1f8fff" stop-opacity=".20"/>
+    <stop offset="1" stop-color="#1f8fff" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="b" cx="85%" cy="20%" r="50%">
+    <stop offset="0" stop-color="#8a5cff" stop-opacity=".18"/>
+    <stop offset="1" stop-color="#8a5cff" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="c" cx="70%" cy="90%" r="55%">
+    <stop offset="0" stop-color="#16d9d1" stop-opacity=".14"/>
+    <stop offset="1" stop-color="#16d9d1" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="line" x1="0" x2="1">
+    <stop stop-color="#22c8ff" stop-opacity=".05"/>
+    <stop offset=".45" stop-color="#9b7cff" stop-opacity=".85"/>
+    <stop offset=".7" stop-color="#25d9d0" stop-opacity=".7"/>
+    <stop offset="1" stop-color="#22c8ff" stop-opacity=".04"/>
+  </linearGradient>
+  <filter id="blur"><feGaussianBlur stdDeviation="16"/></filter>
+  <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1600" height="900" fill="#06111f"/>
+<rect width="1600" height="900" fill="url(#a)"/>
+<rect width="1600" height="900" fill="url(#b)"/>
+<rect width="1600" height="900" fill="url(#c)"/>
+
+<!-- subtle medical network -->
+<g fill="none" stroke="#6f8cff" stroke-opacity=".10" stroke-width="1">
+ <path d="M980 90L1160 170L1300 95L1490 210L1400 390L1190 350L1040 470L900 360L980 90"/>
+ <path d="M1160 170L1190 350M1300 95L1190 350M1490 210L1400 390M1040 470L1190 350"/>
+</g>
+<g fill="#45c9ff" opacity=".22">
+ <circle cx="980" cy="90" r="4"/><circle cx="1160" cy="170" r="5"/><circle cx="1300" cy="95" r="4"/>
+ <circle cx="1490" cy="210" r="5"/><circle cx="1400" cy="390" r="4"/><circle cx="1190" cy="350" r="5"/>
+ <circle cx="1040" cy="470" r="4"/><circle cx="900" cy="360" r="4"/>
+</g>
+
+<!-- ECG track -->
+<path d="M0 670 H260 C285 670 295 670 315 650 L340 690 L365 670 H520
+         C550 670 565 670 585 625 L610 720 L640 670 H760
+         C785 670 800 670 820 650 L845 690 L870 670 H1010
+         C1040 670 1055 670 1075 625 L1100 720 L1130 670 H1300
+         C1330 670 1345 670 1365 650 L1390 690 L1415 670 H1600"
+      fill="none" stroke="url(#line)" stroke-width="3" filter="url(#glow)"/>
+
+<!-- soft wave layers -->
+<path d="M0 735 C260 700 430 790 700 735 S1160 700 1600 750" fill="none" stroke="#25d9d0" stroke-opacity=".07" stroke-width="2"/>
+<path d="M0 770 C280 735 500 815 780 760 S1260 730 1600 785" fill="none" stroke="#8a5cff" stroke-opacity=".07" stroke-width="2"/>
+<path d="M0 810 C260 775 510 845 820 800 S1260 770 1600 820" fill="none" stroke="#22c8ff" stroke-opacity=".06" stroke-width="2"/>
+</svg>

@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1000" preserveAspectRatio="xMidYMid slice">
+<defs>
+ <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+  <stop stop-color="#061426"/><stop offset=".55" stop-color="#071b2b"/><stop offset="1" stop-color="#092b3b"/>
+ </linearGradient>
+ <linearGradient id="glass" x1="0" x2="1">
+  <stop stop-color="#173b54" stop-opacity=".95"/><stop offset="1" stop-color="#0c2536" stop-opacity=".95"/>
+ </linearGradient>
+ <linearGradient id="cyan" x1="0" x2="1">
+  <stop stop-color="#19c9ff" stop-opacity=".1"/><stop offset=".5" stop-color="#1ee3d0" stop-opacity=".9"/><stop offset="1" stop-color="#6f78ff" stop-opacity=".15"/>
+ </linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="soft"><feGaussianBlur stdDeviation="24"/></filter>
+ <pattern id="grid" width="46" height="46" patternUnits="userSpaceOnUse">
+  <path d="M46 0H0V46" fill="none" stroke="#63a9d1" stroke-opacity=".035"/>
+ </pattern>
+</defs>
+
+<rect width="1800" height="1000" fill="url(#sky)"/>
+<rect width="1800" height="1000" fill="url(#grid)"/>
+
+<!-- ambient technology glow -->
+<circle cx="320" cy="220" r="310" fill="#148dff" opacity=".10" filter="url(#soft)"/>
+<circle cx="1240" cy="240" r="280" fill="#7b5cff" opacity=".10" filter="url(#soft)"/>
+<circle cx="1540" cy="820" r="360" fill="#16d9d0" opacity=".09" filter="url(#soft)"/>
+
+<!-- network nodes -->
+<g stroke="#49bfff" stroke-opacity=".18" stroke-width="1.2" fill="none">
+ <path d="M690 120L850 210L1030 125L1160 270L1010 360L820 330L690 120"/>
+ <path d="M850 210L820 330M1030 125L1010 360M1160 270L1010 360"/>
+ <path d="M520 420L700 500L820 330M700 500L1010 360"/>
+</g>
+<g fill="#4ad6ff" opacity=".55">
+ <circle cx="690" cy="120" r="3"/><circle cx="850" cy="210" r="4"/><circle cx="1030" cy="125" r="3"/>
+ <circle cx="1160" cy="270" r="4"/><circle cx="1010" cy="360" r="4"/><circle cx="820" cy="330" r="3"/>
+ <circle cx="520" cy="420" r="3"/><circle cx="700" cy="500" r="4"/>
+</g>
+
+<!-- hospital building on right -->
+<g transform="translate(1160 250)">
+ <rect x="70" y="95" width="500" height="430" rx="8" fill="#081a2b" stroke="#49cfff" stroke-opacity=".25"/>
+ <rect x="0" y="185" width="145" height="340" rx="6" fill="#0b2235" stroke="#49cfff" stroke-opacity=".18"/>
+ <rect x="390" y="40" width="180" height="485" rx="6" fill="url(#glass)" stroke="#5bdfff" stroke-opacity=".18"/>
+ <!-- rooftop cross -->
+ <rect x="455" y="0" width="50" height="120" rx="6" fill="#18d6c7" opacity=".9"/>
+ <rect x="420" y="35" width="120" height="50" rx="6" fill="#18d6c7" opacity=".9"/>
+ <circle cx="480" cy="60" r="92" fill="#18d6c7" opacity=".05"/>
+ <!-- windows -->
+ <g fill="#5bc9ef" opacity=".36">
+  <path d="M105 125h38v28h-38zM170 125h38v28h-38zM235 125h38v28h-38zM300 125h38v28h-38zM365 125h38v28h-38zM430 125h38v28h-38zM495 125h38v28h-38z"/>
+  <path d="M105 180h38v28h-38zM170 180h38v28h-38zM235 180h38v28h-38zM300 180h38v28h-38zM365 180h38v28h-38zM430 180h38v28h-38zM495 180h38v28h-38z"/>
+  <path d="M105 235h38v28h-38zM170 235h38v28h-38zM235 235h38v28h-38zM300 235h38v28h-38zM365 235h38v28h-38zM430 235h38v28h-38zM495 235h38v28h-38z"/>
+  <path d="M105 290h38v28h-38zM170 290h38v28h-38zM235 290h38v28h-38zM300 290h38v28h-38zM365 290h38v28h-38zM430 290h38v28h-38zM495 290h38v28h-38z"/>
+  <path d="M105 345h38v28h-38zM170 345h38v28h-38zM235 345h38v28h-38zM300 345h38v28h-38zM365 345h38v28h-38zM430 345h38v28h-38zM495 345h38v28h-38z"/>
+ </g>
+ <!-- hospital entrance -->
+ <rect x="265" y="395" width="150" height="130" rx="5" fill="#071521" stroke="#2dd9cf" stroke-opacity=".35"/>
+ <path d="M280 450h120" stroke="#2dd9cf" stroke-opacity=".3"/>
+ <!-- ambulance -->
+ <g transform="translate(100 475)">
+  <rect x="0" y="0" width="120" height="32" rx="7" fill="#dceff8" opacity=".75"/>
+  <rect x="82" y="-10" width="42" height="42" rx="8" fill="#cfe7f2" opacity=".8"/>
+  <rect x="20" y="8" width="28" height="9" fill="#1fd3cf"/>
+  <rect x="29" y="0" width="10" height="25" fill="#1fd3cf"/>
+  <circle cx="25" cy="34" r="7" fill="#08131f"/><circle cx="100" cy="34" r="7" fill="#08131f"/>
+ </g>
+</g>
+
+<!-- foreground ECG -->
+<path d="M0 765H310L342 765L360 748L382 780L404 765H610L638 765L662 710L686 830L715 765H900L928 765L950 747L972 781L995 765H1200L1225 765L1248 708L1272 830L1300 765H1510L1540 765L1560 747L1585 782L1610 765H1800"
+ fill="none" stroke="url(#cyan)" stroke-width="4" filter="url(#glow)"/>
+<path d="M0 835 C260 790 500 870 760 820 S1260 790 1800 845" fill="none" stroke="#2bdad0" stroke-opacity=".10" stroke-width="2"/>
+</svg>

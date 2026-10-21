@@ -1,0 +1,193 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReferBridge | Hospital Facility Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="profile.css">
+<link rel="stylesheet" href="sidebar-collapse.css">
+<link rel="icon" type="image/png" href="assets/referbridge-icon.png">
+<link rel="apple-touch-icon" href="assets/referbridge-icon.png">
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <a href="dashboard.html" class="brand-mark">
+      <span class="brand-mark-icon"><img src="assets/referbridge-icon.png" alt="ReferBridge logo"></span>
+      <span class="brand-name">Refer<span>Bridge</span></span>
+    </a>
+
+    <nav class="nav-links">
+      <a href="home.html" class="nav-link" data-tooltip="Home"><span class="nav-icon">&#127968;</span><span>Home</span></a>
+      <a href="dashboard.html" class="nav-link" data-tooltip="Dashboard"><span class="nav-icon">&#128202;</span><span>Dashboard</span></a>
+      <a href="profile.html" class="nav-link active" data-tooltip="Hospital Profile"><span class="nav-icon">&#127973;</span><span>Hospital Profile</span></a>
+      <a href="beds.html" class="nav-link" data-tooltip="Bed Management"><span class="nav-icon">&#128719;</span><span>Bed Management</span></a>
+      <a href="requests.html" class="nav-link" data-tooltip="Incoming Requests"><span class="nav-icon">&#128229;</span><span>Incoming Requests</span></a>
+      <a href="network.html" class="nav-link" data-tooltip="Hospital Network"><span class="nav-icon">&#127760;</span><span>Hospital Network</span></a>
+      <a href="analytics.html" class="nav-link" data-tooltip="Analytics"><span class="nav-icon">&#128200;</span><span>Analytics</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="themeToggle" class="theme-toggle-inline" title="Switch between Dark and Light mode">
+        <span id="themeIcon">&#127769;</span> <span>Theme</span>
+      </button>
+      <button id="logoutBtn" class="logout-btn" title="Sign out of ReferBridge">
+        <span>&#128682;</span> <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar fade-in-up">
+      <div>
+        <p class="eyebrow">FACILITY CONFIGURATION</p>
+        <h1>Hospital Profile &amp; Capacity Settings</h1>
+      </div>
+      <div class="topbar-quick-actions">
+        <button type="button" class="topbar-mic-btn" id="topbarMicBtn" title="Ask AI Assistant by voice" aria-label="Voice Assistant">&#127897;<span class="mic-label">Speak</span></button>
+        <button type="button" class="topbar-cmd-chip" title="Open Quick Command Palette (Ctrl + K)">
+          <span>Quick Actions</span> <kbd>Ctrl K</kbd>
+        </button>
+        <div class="status-badge" id="hospitalStatusBadge">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Available</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="profile-layout fade-in-up">
+      <!-- Edit Profile Form Card -->
+      <section class="form-card">
+        <div class="form-header">
+          <div class="form-icon">&#127973;</div>
+          <div>
+            <h3>Hospital Facility Details</h3>
+            <p>Update hospital identity, emergency dispatch contact, and baseline bed quotas.</p>
+          </div>
+        </div>
+
+        <form id="profileForm" novalidate>
+          <div class="field-row">
+            <div class="field">
+              <label for="hospitalName">Hospital / Facility Name</label>
+              <input type="text" id="hospitalName" placeholder="e.g. ReferBridge General Hospital" required>
+            </div>
+            <div class="field">
+              <label for="hospitalId">Hospital Registry ID</label>
+              <input type="text" id="hospitalId" readonly placeholder="RB-1001" style="opacity: 0.75;">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="location">Facility Location &amp; Address</label>
+              <input type="text" id="location" placeholder="e.g. Sector 12, Chandigarh" required>
+            </div>
+            <div class="field">
+              <label for="contact">Emergency Hotline / Contact</label>
+              <input type="text" id="contact" placeholder="e.g. +91 98765 43210" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="specialties">Specialized Medical Departments (comma-separated)</label>
+            <input type="text" id="specialties" placeholder="Cardiology, Neurology, Orthopedics, Trauma" required>
+          </div>
+
+          <h4 class="subhead">Baseline Ward &amp; Critical Care Capacity</h4>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="totalBeds">Total General Ward Beds</label>
+              <input type="number" id="totalBeds" min="1" max="1000" placeholder="120" required>
+            </div>
+            <div class="field">
+              <label for="occupiedBeds">Currently Occupied Beds</label>
+              <input type="number" id="occupiedBeds" min="0" max="1000" placeholder="78" required>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="totalICU">Total ICU Beds</label>
+              <input type="number" id="totalICU" min="1" max="200" placeholder="20" required>
+            </div>
+            <div class="field">
+              <label for="occupiedICU">Currently Occupied ICU Beds</label>
+              <input type="number" id="occupiedICU" min="0" max="200" placeholder="14" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary btn-ripple" id="saveBtn">
+            <span>Save Profile &amp; Broadcast Updates</span>
+            <span style="font-size:16px;">&#128190;</span>
+          </button>
+        </form>
+      </section>
+
+      <!-- Live Calculated Summary Preview Sidebar -->
+      <aside class="summary-card">
+        <div class="summary-badge">
+          <span class="live-radar-dot"></span>
+          <span>LIVE PREVIEW</span>
+        </div>
+
+        <h3 id="summaryHospitalName">ReferBridge General Hospital</h3>
+        <p class="summary-sub" id="summaryId">Registry ID: RB-1001</p>
+
+        <div class="summary-meta-block">
+          <div class="summary-meta-item">
+            <span>?? Location</span>
+            <strong id="summaryLocation">Sector 12, Chandigarh</strong>
+          </div>
+          <div class="summary-meta-item">
+            <span>?? Emergency Contact</span>
+            <strong id="summaryContact">+91 98765 43210</strong>
+          </div>
+          <div class="summary-meta-item">
+            <span>? Specialties</span>
+            <strong id="summarySpecialties">Cardiology, Neurology, Orthopedics</strong>
+          </div>
+        </div>
+
+        <div class="summary-stats-block">
+          <div class="sum-stat">
+            <span>General Capacity</span>
+            <strong id="summaryTotalBeds">120</strong>
+          </div>
+          <div class="sum-stat green">
+            <span>Available Beds</span>
+            <strong id="summaryAvailableBeds" style="color:var(--rb-green);">42</strong>
+          </div>
+          <div class="sum-stat">
+            <span>Total ICU</span>
+            <strong id="summaryTotalICU">20</strong>
+          </div>
+          <div class="sum-stat cyan">
+            <span>Available ICU</span>
+            <strong id="summaryAvailableICU" style="color:var(--rb-cyan);">6</strong>
+          </div>
+        </div>
+
+        <div class="occupancy-gauge-wrap">
+          <div class="occupancy-labels">
+            <span>Occupancy Rate</span>
+            <strong id="summaryOccupancyRate">65%</strong>
+          </div>
+          <div class="occupancy-track">
+            <div class="occupancy-bar" id="occupancyBar" style="width: 65%;"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script src="sidebar-collapse.js"></script>
+<script src="profile.js"></script>
+</body>
+</html>

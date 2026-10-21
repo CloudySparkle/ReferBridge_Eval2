@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReferBridge | Incoming Referral Requests</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="requests.css">
+<link rel="stylesheet" href="sidebar-collapse.css">
+<link rel="icon" type="image/png" href="assets/referbridge-icon.png">
+<link rel="apple-touch-icon" href="assets/referbridge-icon.png">
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <a href="dashboard.html" class="brand-mark">
+      <span class="brand-mark-icon"><img src="assets/referbridge-icon.png" alt="ReferBridge logo"></span>
+      <span class="brand-name">Refer<span>Bridge</span></span>
+    </a>
+
+    <nav class="nav-links">
+      <a href="home.html" class="nav-link" data-tooltip="Home"><span class="nav-icon">&#127968;</span><span>Home</span></a>
+      <a href="dashboard.html" class="nav-link" data-tooltip="Dashboard"><span class="nav-icon">&#128202;</span><span>Dashboard</span></a>
+      <a href="profile.html" class="nav-link" data-tooltip="Hospital Profile"><span class="nav-icon">&#127973;</span><span>Hospital Profile</span></a>
+      <a href="beds.html" class="nav-link" data-tooltip="Bed Management"><span class="nav-icon">&#128719;</span><span>Bed Management</span></a>
+      <a href="requests.html" class="nav-link active" data-tooltip="Incoming Requests"><span class="nav-icon">&#128229;</span><span>Incoming Requests</span></a>
+      <a href="network.html" class="nav-link" data-tooltip="Hospital Network"><span class="nav-icon">&#127760;</span><span>Hospital Network</span></a>
+      <a href="analytics.html" class="nav-link" data-tooltip="Analytics"><span class="nav-icon">&#128200;</span><span>Analytics</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="themeToggle" class="theme-toggle-inline" title="Switch between Dark and Light mode">
+        <span id="themeIcon">&#127769;</span> <span>Theme</span>
+      </button>
+      <button id="logoutBtn" class="logout-btn" title="Sign out of ReferBridge">
+        <span>&#128682;</span> <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar fade-in-up">
+      <div>
+        <p class="eyebrow">PATIENT TRIAGE &amp; TRANSFER</p>
+        <h1>Incoming Referral Requests</h1>
+      </div>
+      <div class="topbar-quick-actions">
+        <button type="button" class="topbar-mic-btn" id="topbarMicBtn" title="Ask AI Assistant by voice" aria-label="Voice Assistant">&#127897;<span class="mic-label">Speak</span></button>
+        <button type="button" class="topbar-cmd-chip" title="Open Quick Command Palette (Ctrl + K)">
+          <span>Quick Actions</span> <kbd>Ctrl K</kbd>
+        </button>
+        <div class="status-badge" id="hospitalStatusBadge">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Available</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Filter & Search Toolbar -->
+    <section class="filter-bar fade-in-up">
+      <div class="filter-tabs" role="tablist">
+        <button class="filter-tab active" data-status="All" role="tab" aria-selected="true">
+          All <span class="tab-count" id="countAll">0</span>
+        </button>
+        <button class="filter-tab" data-status="Pending" role="tab" aria-selected="false">
+          Pending <span class="tab-count yellow" id="countPending">0</span>
+        </button>
+        <button class="filter-tab" data-status="Accepted" role="tab" aria-selected="false">
+          Accepted <span class="tab-count green" id="countAccepted">0</span>
+        </button>
+        <button class="filter-tab" data-status="Rejected" role="tab" aria-selected="false">
+          Rejected <span class="tab-count red" id="countRejected">0</span>
+        </button>
+      </div>
+
+      <div class="filter-controls">
+        <div class="search-wrap">
+          <span class="search-icon">&#128269;</span>
+          <input type="text" id="search" placeholder="Search by patient ID, condition, or hospital..." aria-label="Search referrals">
+        </div>
+        <select id="urgencyFilter" aria-label="Filter by urgency level">
+          <option value="All">All Urgency Levels</option>
+          <option value="Critical">&#128680; Critical Only</option>
+          <option value="High">?? High Urgency</option>
+          <option value="Moderate">?? Moderate Urgency</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Requests Stream List -->
+    <div id="requestList" class="request-list fade-in-up" role="feed"></div>
+
+    <!-- Empty State Fallback -->
+    <div id="emptyState" class="empty-state" hidden>
+      <div class="empty-icon">??</div>
+      <h3>No referral requests match your criteria</h3>
+      <p>Try clearing filters or check back when new patient transfer requests arrive.</p>
+    </div>
+  </main>
+</div>
+
+<!-- Modal: Comprehensive Medical Case Dossier -->
+<div id="caseModal" class="rb-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalCaseTitle">
+  <div class="rb-modal" style="max-width: 640px;">
+    <div class="rb-modal-head">
+      <div>
+        <span class="live-tag" style="margin-bottom:4px; display:inline-block;">CLINICAL DOSSIER</span>
+        <h3 id="modalCaseTitle">Patient Case Record</h3>
+      </div>
+      <button type="button" class="rb-modal-close-btn" onclick="closeModal('caseModal')" aria-label="Close dialog">�</button>
+    </div>
+    <div class="rb-modal-body" id="modalCaseBody"></div>
+    <div class="rb-modal-foot" id="modalCaseFoot"></div>
+  </div>
+</div>
+
+<script src="sidebar-collapse.js"></script>
+<script src="requests.js"></script>
+</body>
+</html>
