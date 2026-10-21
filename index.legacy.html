@@ -1,0 +1,324 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReferBridge | Admin Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="index.css">
+<link rel="stylesheet" href="sidebar-collapse.css">
+<link rel="icon" type="image/png" href="assets/referbridge-icon.png">
+<link rel="apple-touch-icon" href="assets/referbridge-icon.png">
+<style>
+/* ── Login Page Enhanced Animations ─────────────────────────────────────── */
+
+/* Animated floating orbs */
+.login-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+.login-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  animation: orbDrift var(--t, 14s) ease-in-out var(--d, 0s) infinite alternate;
+}
+.login-orb:nth-child(1) { width:380px; height:380px; background:rgba(20,228,184,0.12); top:-80px; left:-60px; --t:16s; --d:0s; }
+.login-orb:nth-child(2) { width:300px; height:300px; background:rgba(34,200,255,0.10); bottom:-40px; right:-40px; --t:12s; --d:2s; }
+.login-orb:nth-child(3) { width:220px; height:220px; background:rgba(139,106,255,0.08); top:40%; right:10%; --t:18s; --d:4s; }
+
+@keyframes orbDrift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(30px, 20px) scale(1.08); }
+}
+
+/* Moving referral journey banner above login card */
+.login-journey-banner {
+  width: min(1080px, 94vw);
+  margin: 0 auto 18px;
+  padding: 10px 24px;
+  border: 1px solid var(--rb-border-glow);
+  border-radius: var(--rb-radius-full);
+  background: rgba(8,24,40,0.7);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  overflow: hidden;
+}
+.banner-label {
+  flex-shrink: 0;
+  font: 700 9px var(--font-mono);
+  letter-spacing: 0.14em;
+  color: var(--rb-teal);
+  padding: 3px 10px;
+  border: 1px solid rgba(20,228,184,0.35);
+  border-radius: var(--rb-radius-full);
+  background: rgba(20,228,184,0.08);
+  white-space: nowrap;
+}
+.banner-scroll {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.banner-inner {
+  display: flex;
+  gap: 40px;
+  width: max-content;
+  animation: bannerRoll 22s linear infinite;
+  white-space: nowrap;
+}
+@keyframes bannerRoll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.banner-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 11px var(--font-mono);
+  color: var(--rb-text-muted);
+}
+.banner-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--rb-cyan);
+  flex-shrink: 0;
+}
+.banner-dot.green  { background: var(--rb-green); }
+.banner-dot.red    { background: var(--rb-red); }
+.banner-dot.purple { background: var(--rb-purple); }
+
+/* Enhanced login card glow */
+.login-card {
+  animation: cardFloat 6s ease-in-out infinite;
+}
+@keyframes cardFloat {
+  0%, 100% { box-shadow: 0 30px 80px rgba(0,0,0,0.48), 0 0 35px rgba(34,200,255,0.1); }
+  50%       { box-shadow: 0 36px 90px rgba(0,0,0,0.52), 0 0 55px rgba(20,228,184,0.2); }
+}
+
+/* Visual panel animated gradient overlay */
+.visual-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(20,228,184,0.12) 0%, transparent 50%, rgba(139,106,255,0.1) 100%);
+  animation: panelGrad 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes panelGrad {
+  from { opacity: 0.5; }
+  to   { opacity: 1; }
+}
+
+/* Floating live stats on visual panel */
+.visual-stats {
+  position: absolute;
+  bottom: 28px;
+  left: 24px;
+  right: 24px;
+  z-index: 5;
+  display: flex;
+  gap: 12px;
+}
+.vstat {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(6,24,38,0.78);
+  border: 1px solid rgba(56,198,232,0.28);
+  backdrop-filter: blur(10px);
+  text-align: center;
+  animation: vstatPop 0.5s ease forwards;
+  opacity: 0;
+}
+.vstat:nth-child(1) { animation-delay: 0.3s; }
+.vstat:nth-child(2) { animation-delay: 0.6s; }
+.vstat:nth-child(3) { animation-delay: 0.9s; }
+@keyframes vstatPop {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.vstat b {
+  display: block;
+  font: 700 18px var(--font-display);
+  color: var(--rb-teal);
+  font-size: 17px;
+}
+.vstat span {
+  font: 600 9px var(--font-mono);
+  letter-spacing: 0.1em;
+  color: var(--rb-text-muted);
+}
+
+/* Animated input label */
+.field-group label {
+  transition: color 0.2s ease;
+}
+.input-wrap:focus-within + * label,
+.field-group:focus-within label {
+  color: var(--rb-teal) !important;
+}
+
+/* Login button shimmer */
+.login-btn {
+  position: relative;
+  overflow: hidden;
+}
+.login-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  animation: btnShimmer 2.5s ease-in-out infinite;
+}
+@keyframes btnShimmer {
+  from { left: -100%; }
+  to   { left: 200%; }
+}
+
+[data-theme="light"] .login-journey-banner {
+  background: rgba(255,255,255,0.8);
+}
+</style>
+</head>
+<body>
+<div class="login-bg-glow" aria-hidden="true"></div>
+<div class="login-ecg-stream" aria-hidden="true"></div>
+
+<!-- Floating background orbs -->
+<div class="login-orbs" aria-hidden="true">
+  <div class="login-orb"></div>
+  <div class="login-orb"></div>
+  <div class="login-orb"></div>
+</div>
+
+<main class="login-page">
+
+  <!-- Animated Journey Banner -->
+  <div class="login-journey-banner" aria-label="Live referral activity ticker">
+    <span class="banner-label">LIVE NETWORK</span>
+    <div class="banner-scroll">
+      <div class="banner-inner">
+        <span class="banner-step"><span class="banner-dot"></span> Patient arrives at hospital → ICU full</span>
+        <span class="banner-step"><span class="banner-dot red"></span> Hospital refers patient to ReferBridge network</span>
+        <span class="banner-step"><span class="banner-dot green"></span> Match found at Sunrise Hospital · 6 ICU beds</span>
+        <span class="banner-step"><span class="banner-dot purple"></span> Transfer coordinated · Patient admitted in 12 min</span>
+        <span class="banner-step"><span class="banner-dot green"></span> REQ-447 Accepted · Lotus Care → Sunrise · ❤️ Saved</span>
+        <span class="banner-step"><span class="banner-dot"></span> Patient arrives at hospital → ICU full</span>
+        <span class="banner-step"><span class="banner-dot red"></span> Hospital refers patient to ReferBridge network</span>
+        <span class="banner-step"><span class="banner-dot green"></span> Match found at Sunrise Hospital · 6 ICU beds</span>
+        <span class="banner-step"><span class="banner-dot purple"></span> Transfer coordinated · Patient admitted in 12 min</span>
+        <span class="banner-step"><span class="banner-dot green"></span> REQ-447 Accepted · Lotus Care → Sunrise · ❤️ Saved</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="login-card fade-in-up">
+    <div class="visual-panel">
+      <div class="visual-badge">
+        <span class="live-radar-dot"></span>
+        <span>CONNECTED HEALTHCARE NETWORK</span>
+      </div>
+      <img class="reference-panel-image" src="assets/referbridge-panel.png" alt="ReferBridge hospital interface">
+      <div class="visual-overlay-glow"></div>
+
+      <!-- Live Stats Overlay on visual panel -->
+      <div class="visual-stats">
+        <div class="vstat">
+          <b>8</b>
+          <span>PARTNER HOSPITALS</span>
+        </div>
+        <div class="vstat">
+          <b>52</b>
+          <span>BEDS AVAILABLE</span>
+        </div>
+        <div class="vstat">
+          <b>24/7</b>
+          <span>LIVE SYNC</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <div class="brand-header">
+        <div class="login-brand-logo">
+          <img src="assets/referbridge-icon.png" alt="ReferBridge logo">
+        </div>
+        <div>
+          <span class="brand-title">Refer<span>Bridge</span></span>
+          <span class="brand-dept">HOSPITAL REFERRAL SYSTEM</span>
+        </div>
+      </div>
+
+      <div class="form-top">
+        <p class="eyebrow">WELCOME BACK</p>
+        <h1>Admin Login</h1>
+        <p class="subtitle">Sign in to coordinate capacity and transfer referrals.</p>
+      </div>
+
+      <div id="message" class="message" role="alert" aria-live="polite"></div>
+
+      <form id="loginForm" novalidate>
+        <div class="field-group">
+          <label for="email">Admin Email</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input id="email" type="email" placeholder="admin@referbridge.com" autocomplete="username" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input id="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+            <button type="button" id="togglePass" aria-label="Toggle password visibility">Show</button>
+          </div>
+        </div>
+
+        <div class="options">
+          <label class="remember">
+            <input id="remember" type="checkbox">
+            <span>Remember Me</span>
+          </label>
+          <a href="#" id="forgot">Forgot Password?</a>
+        </div>
+
+        <button class="login-btn btn-ripple" type="submit">
+          <span>Login to ReferBridge</span>
+          <span class="btn-arrow">→</span>
+        </button>
+      </form>
+
+      <p class="signup-link">New facility administrator? <a href="signup.html">Register Hospital</a></p>
+
+      <div class="demo-box" id="demoBox">
+        <div class="demo-head">
+          <span class="demo-tag">EVALUATION DEMO</span>
+          <button type="button" id="autoFillDemoBtn" class="btn-autofill" title="Auto-fill and submit login credentials">
+            ⚡ 1-Click Auto Fill
+          </button>
+        </div>
+        <div class="demo-creds">
+          <span><strong>Email:</strong> admin@referbridge.com</span>
+          <span><strong>Password:</strong> admin123</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="sidebar-collapse.js"></script>
+<script src="index.js"></script>
+</body>
+</html>
