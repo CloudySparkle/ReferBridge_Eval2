@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -28,6 +28,7 @@
       <a href="beds.html" class="nav-link " data-tooltip="Bed Management"><span class="nav-icon">&#128719;</span><span>Bed Management</span></a>
       <a href="requests.html" class="nav-link active" data-tooltip="Incoming Requests"><span class="nav-icon">&#128229;</span><span>Incoming Requests</span></a>
       <a href="network.html" class="nav-link " data-tooltip="Hospital Network"><span class="nav-icon">&#127760;</span><span>Hospital Network</span></a>
+      <a href="map.html" class="nav-link " data-tooltip="Live Map"><span class="nav-icon">&#128506;</span><span>Live Map</span></a>
       <a href="analytics.html" class="nav-link " data-tooltip="Analytics"><span class="nav-icon">&#128200;</span><span>Analytics</span></a>
     </nav>
 
@@ -116,6 +117,23 @@
     </div>
     <div class="rb-modal-body" id="modalCaseBody"></div>
     <div class="rb-modal-foot" id="modalCaseFoot"></div>
+  </div>
+</div>
+
+<!-- Modal: Deny Referral & Select Alternative Hospital -->
+<div id="modalDenyReroute" class="rb-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="denyModalTitle">
+  <div class="rb-modal" style="max-width: 680px;">
+    <div class="rb-modal-head">
+      <div>
+        <span class="live-tag" style="background:rgba(239,68,68,0.15); color:var(--rb-red); border:1px solid rgba(239,68,68,0.3); margin-bottom:4px; display:inline-block;">
+          CAPACITY DEFICIT · REROUTE PROTOCOL
+        </span>
+        <h3 id="denyModalTitle" style="color:var(--rb-red);">Deny Request & Select Transfer Hospital</h3>
+      </div>
+      <button type="button" class="rb-modal-close-btn" onclick="closeModal('modalDenyReroute')" aria-label="Close dialog">✕</button>
+    </div>
+    <div class="rb-modal-body" id="denyModalBody"></div>
+    <div class="rb-modal-foot" id="denyModalFoot"></div>
   </div>
 </div>
 

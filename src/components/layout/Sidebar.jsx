@@ -57,14 +57,24 @@ export default function Sidebar() {
           <span>Dashboard</span>
         </NavLink>
 
-        {/* Migrated React Hospital Network & Map */}
+        {/* Migrated React Hospital Network */}
         <NavLink
           to="/network"
           className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-          data-tooltip="Hospital Network & Map"
+          data-tooltip="Hospital Network"
         >
           <span className="nav-icon">🌐</span>
           <span>Hospital Network</span>
+        </NavLink>
+
+        {/* Live Map 4 Cities */}
+        <NavLink
+          to="/map"
+          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+          data-tooltip="Live Hospital Map"
+        >
+          <span className="nav-icon">🗺️</span>
+          <span>Live Map</span>
         </NavLink>
 
         {/* Migrated React Patient Records */}

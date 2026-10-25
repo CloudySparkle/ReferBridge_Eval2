@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -225,6 +225,17 @@
 
   <section class="login-card fade-in-up">
     <div class="visual-panel">
+      <!-- Live Welcome Split Overlay (Matching user reference image style) -->
+      <div class="welcome-banner-split" id="welcomeBannerSplit">
+        <div class="welcome-split-content">
+          <h2 id="welcomeBannerHeading">Welcome!</h2>
+          <p id="welcomeBannerSub">Create your facility account.<br>Coordinate care on ReferBridge for Free!</p>
+          <button type="button" class="btn-banner-switch" id="btnBannerSwitch">
+            <span>Sign Up</span>
+          </button>
+        </div>
+      </div>
+
       <div class="visual-badge">
         <span class="live-radar-dot"></span>
         <span>CONNECTED HEALTHCARE NETWORK</span>
@@ -235,12 +246,12 @@
       <!-- Live Stats Overlay on visual panel -->
       <div class="visual-stats">
         <div class="vstat">
-          <b>8</b>
+          <b>25</b>
           <span>PARTNER HOSPITALS</span>
         </div>
         <div class="vstat">
-          <b>52</b>
-          <span>BEDS AVAILABLE</span>
+          <b>14</b>
+          <span>GOVT CENTERS</span>
         </div>
         <div class="vstat">
           <b>24/7</b>
@@ -260,7 +271,18 @@
         </div>
       </div>
 
-      <div class="form-top">
+      <!-- Segmented Mode Switcher (Login vs Sign Up) -->
+      <div class="auth-segment-bar">
+        <button type="button" class="auth-seg-btn active" id="tabLoginBtn">
+          <span>🔑 Admin Login</span>
+        </button>
+        <button type="button" class="auth-seg-btn" id="tabSignupBtn">
+          <span>🏥 Register Hospital</span>
+        </button>
+      </div>
+
+      <div id="loginView">
+        <div class="form-top">
         <p class="eyebrow">WELCOME BACK</p>
         <h1>Admin Login</h1>
         <p class="subtitle">Sign in to coordinate capacity and transfer referrals.</p>
@@ -273,7 +295,7 @@
           <label for="email">Admin Email</label>
           <div class="input-wrap">
             <span class="input-icon">✉</span>
-            <input id="email" type="email" placeholder="admin@referbridge.com" autocomplete="username" required>
+            <input id="email" type="email" placeholder="admin@yourhospital.com" autocomplete="username" required>
           </div>
         </div>
 
@@ -300,19 +322,105 @@
         </button>
       </form>
 
-      <p class="signup-link">New facility administrator? <a href="signup.html">Register Hospital</a></p>
-
-      <div class="demo-box" id="demoBox">
-        <div class="demo-head">
-          <span class="demo-tag">EVALUATION DEMO</span>
-          <button type="button" id="autoFillDemoBtn" class="btn-autofill" title="Auto-fill and submit login credentials">
-            ⚡ 1-Click Auto Fill
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+          <p class="signup-link" style="margin:0;">New administrator? <a href="#" id="linkSwitchToSignup">Register Facility</a></p>
+          <button type="button" class="btn-quick-demo" id="btnQuickDemoLogin" title="Quick fill demonstration hospital administrator account">
+            ⚡ Quick Demo Fill
           </button>
         </div>
-        <div class="demo-creds">
-          <span><strong>Email:</strong> admin@referbridge.com</span>
-          <span><strong>Password:</strong> admin123</span>
+      </div>
+      <!-- ── END VIEW 1: LOGIN VIEW ── -->
+
+      <!-- ── VIEW 2: REGISTRATION VIEW (SIGN UP) ── -->
+      <div id="signupView" style="display:none;">
+        <div class="form-top">
+          <p class="eyebrow" style="color:var(--rb-cyan);">HOSPITAL ONBOARDING</p>
+          <h1>Register Facility</h1>
+          <p class="subtitle">Sets up your medical director credentials and referral profile.</p>
         </div>
+
+        <form id="unifiedSignupForm" novalidate>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div class="field-group" style="margin-bottom:0;">
+              <label for="regAdminName">Director Name</label>
+              <div class="input-wrap">
+                <span class="input-icon">👤</span>
+                <input id="regAdminName" type="text" placeholder="Dr. Priya Sharma" required>
+              </div>
+            </div>
+
+            <div class="field-group" style="margin-bottom:0;">
+              <label for="regCity">Region / City</label>
+              <div class="input-wrap">
+                <span class="input-icon">📍</span>
+                <select id="regCity" style="width:100%; height:100%; background:transparent; border:none; color:var(--rb-text-main); font-size:13px; outline:none;">
+                  <option value="Chandigarh" style="background:#0a2133;">Chandigarh</option>
+                  <option value="Mohali" style="background:#0a2133;">Mohali (SAS Nagar)</option>
+                  <option value="Panchkula" style="background:#0a2133;">Panchkula</option>
+                  <option value="Zirakpur" style="background:#0a2133;">Zirakpur</option>
+                  <option value="Delhi NCR" style="background:#0a2133;">Delhi NCR</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="regHospitalName">Hospital / Medical Center Name</label>
+            <div class="input-wrap">
+              <span class="input-icon">🏥</span>
+              <input id="regHospitalName" type="text" placeholder="e.g. Sunrise Multispecialty Hospital" required>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="regEmail">Official Admin Email</label>
+            <div class="input-wrap">
+              <span class="input-icon">✉</span>
+              <input id="regEmail" type="email" placeholder="admin@sunrisehospital.com" required>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div class="field-group" style="margin-bottom:0;">
+              <label for="regPassword">Password</label>
+              <div class="input-wrap">
+                <span class="input-icon">🔒</span>
+                <input id="regPassword" type="password" placeholder="At least 6 chars" required>
+              </div>
+            </div>
+
+            <div class="field-group" style="margin-bottom:0;">
+              <label for="regConfirmPassword">Confirm Password</label>
+              <div class="input-wrap">
+                <span class="input-icon">🔒</span>
+                <input id="regConfirmPassword" type="password" placeholder="Re-enter password" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Password Security Bar -->
+          <div id="regStrengthWrap" style="margin-bottom:14px; display:none;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+              <span style="color:var(--rb-text-muted);">Password Security:</span>
+              <strong id="regStrengthLabel" style="color:var(--rb-teal);">Moderate</strong>
+            </div>
+            <div style="height:4px; border-radius:2px; background:rgba(255,255,255,0.1); overflow:hidden;">
+              <div id="regStrengthBar" style="height:100%; width:60%; background:var(--rb-teal); transition:width 0.3s ease;"></div>
+            </div>
+          </div>
+
+          <button class="login-btn btn-ripple" type="submit" style="background:linear-gradient(135deg, #10b981, #059669);">
+            <span>Complete Registration</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </form>
+
+        <p class="signup-link" style="margin-top:14px;">Already registered? <a href="#" id="linkSwitchToLogin">Sign in here</a></p>
+      </div>
+      <!-- ── END VIEW 2 ── -->
+
+      <div style="margin-top:16px;padding:10px 14px;border-radius:8px;background:rgba(34,200,255,0.06);border:1px solid rgba(34,200,255,0.2);font-size:12px;color:var(--rb-text-muted,#94a3b8);text-align:center;">
+        &#x2139; Log in using your registered hospital administrator account or <a href="signup.html" style="color:var(--rb-cyan,#22c8ff);">Register Hospital</a>.
       </div>
     </div>
   </section>

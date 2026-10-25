@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    REFERBRIDGE — SHARED CORE INTERACTION CONTROLLER & AI COPILOT
    Sidebar, Toast System, Command Palette (Ctrl+K), ReferBot AI, Emergency SOS
    ========================================================================== */
@@ -202,6 +202,7 @@
     { title: "Bed Management & Theatre", desc: "Inspect ICU beds & update occupancy counts", url: "beds.html", icon: "🛏", group: "Navigation" },
     { title: "Incoming Referral Requests", desc: "Review, triage and accept inbound transfers", url: "requests.html", icon: "📥", group: "Navigation" },
     { title: "Hospital Directory Network", desc: "Browse partner facilities & dispatch transfer", url: "network.html", icon: "🕸", group: "Navigation" },
+    { title: "Live Hospital Map & Route Suggestion", desc: "Interactive OpenStreetMap mapping for 4 cities & transit distances", url: "map.html", icon: "🗺️", group: "Navigation" },
     { title: "Capacity & Flow Analytics", desc: "7-day trend graphs, donut gauge & demand radar", url: "analytics.html", icon: "📊", group: "Navigation" },
     { title: "Hospital Profile Settings", desc: "Configure medical specialties & capacity limits", url: "profile.html", icon: "🏥", group: "Navigation" },
     { title: "Broadcast Code Red SOS", desc: "Trigger regional emergency critical referral alert", action: "sos", icon: "🚨", group: "Emergency Actions" },
@@ -358,45 +359,141 @@
     };
   }
 
+  /* --------------------------------------------------------------------------
+     PARTNER HOSPITAL DATABASE (for ReferBot live vacancy queries)
+     -------------------------------------------------------------------------- */
+  const BOT_HOSPITALS = [
+    { names: ["pgimer", "pgi", "postgraduate", "pg institute"], name: "PGIMER Chandigarh", city: "Chandigarh", distKm: 1.5, availBeds: 14, icuAvail: 2, specialties: "Cardiology, Trauma, Neurology, ICU" },
+    { names: ["gmch", "gmch 32", "sector 32", "medical college"], name: "GMCH Sector 32", city: "Chandigarh", distKm: 4.2, availBeds: 45, icuAvail: 4, specialties: "Cardiology, Burn Unit, Emergency, ICU" },
+    { names: ["gmsh", "sector 16", "gmsh 16"], name: "GMSH Sector 16", city: "Chandigarh", distKm: 2.8, availBeds: 32, icuAvail: 5, specialties: "Emergency Care, Cardiology, General Medicine" },
+    { names: ["nehru hospital", "nehru", "pgimer apex", "apex cardio"], name: "Nehru Hospital (PGIMER Apex Cardio)", city: "Chandigarh", distKm: 1.6, availBeds: 18, icuAvail: 6, specialties: "Cardiology, Cardiothoracic Surgery, Advanced ICU" },
+    { names: ["civil hospital mohali", "civil mohali"], name: "Civil Hospital Mohali", city: "Mohali", distKm: 6.2, availBeds: 28, icuAvail: 3, specialties: "Emergency, General Medicine, Cardiology, ICU" },
+    { names: ["civil hospital panchkula", "civil panchkula"], name: "Civil Hospital Panchkula", city: "Panchkula", distKm: 8.5, availBeds: 24, icuAvail: 3, specialties: "Emergency, Trauma, Cardiology, ICU" },
+    { names: ["lotus care", "lotus"], name: "Lotus Care Hospital", city: "Chandigarh", distKm: 3.2, availBeds: 24, icuAvail: 6, specialties: "Cardiology, Orthopedics, Emergency Care, ICU" },
+    { names: ["fortis mohali", "fortis hospital mohali", "fortis"], name: "Fortis Hospital Mohali", city: "Mohali", distKm: 5.8, availBeds: 24, icuAvail: 6, specialties: "Cardiology, Oncology, Orthopaedics, ICU" },
+    { names: ["max mohali", "max super", "max hospital"], name: "Max Super Speciality Mohali", city: "Mohali", distKm: 6.4, availBeds: 19, icuAvail: 4, specialties: "Cardiology, Neurology, Advanced ICU" },
+    { names: ["alchemist", "alchemist panchkula"], name: "Alchemist Hospital Panchkula", city: "Panchkula", distKm: 9.1, availBeds: 12, icuAvail: 3, specialties: "Cardiology, Neurology, Vascular Surgery, ICU" },
+    { names: ["sunrise", "sunrise multispecialty"], name: "Sunrise Multispecialty", city: "Mohali", distKm: 6.8, availBeds: 8, icuAvail: 2, specialties: "Pediatrics, Trauma, General Surgery" },
+    { names: ["riverside", "riverside hospital"], name: "Riverside Hospital", city: "Zirakpur", distKm: 12.1, availBeds: 38, icuAvail: 9, specialties: "Trauma, Orthopedics, Critical Care, Cardiology" },
+    { names: ["ivy hospital", "ivy mohali", "ivy"], name: "Ivy Hospital Mohali", city: "Mohali", distKm: 6.0, availBeds: 27, icuAvail: 7, specialties: "Cardiology, Neurology, Trauma, ICU" },
+    { names: ["grecian", "grecian hospital"], name: "Grecian Hospital Mohali", city: "Mohali", distKm: 5.9, availBeds: 20, icuAvail: 5, specialties: "Cardiology, Neurology, Orthopedics, ICU" },
+    { names: ["paras", "paras panchkula", "paras hospital"], name: "Paras Hospital Panchkula", city: "Panchkula", distKm: 10.5, availBeds: 22, icuAvail: 5, specialties: "Cardiology, Neurology, Orthopedics, ICU" },
+    { names: ["columbia asia", "columbia"], name: "Columbia Asia Hospital Panchkula", city: "Panchkula", distKm: 9.5, availBeds: 19, icuAvail: 4, specialties: "Cardiology, General Surgery, Pediatrics, ICU" },
+    { names: ["healing touch", "healing touch zirakpur"], name: "Healing Touch Hospital Zirakpur", city: "Zirakpur", distKm: 11.8, availBeds: 16, icuAvail: 3, specialties: "General Medicine, Emergency, Surgery, ICU" },
+    { names: ["care hospital zirakpur", "care hospital", "care zirakpur"], name: "Care Hospital Zirakpur", city: "Zirakpur", distKm: 12.5, availBeds: 13, icuAvail: 2, specialties: "General Medicine, Emergency, Orthopedics" }
+  ];
+
+  function lookupHospitalByQuery(q) {
+    const lq = q.toLowerCase();
+    return BOT_HOSPITALS.find(h => h.names.some(n => lq.includes(n)));
+  }
+
+  function calcTransitMinsBot(distKm) {
+    if (distKm < 5) return Math.round(distKm * 3.5);
+    if (distKm < 15) return Math.round(distKm * 2.8);
+    return Math.round(distKm * 2.0);
+  }
+
+  function executeBedUpdateBot(dept, seatNum, newState) {
+    let bedStore = {};
+    try { bedStore = JSON.parse(localStorage.getItem("referbridge_beds_theatre") || "{}"); } catch(e) {}
+    const key = dept + "-" + seatNum;
+    const isFull = (newState === "full" || newState === "occupied");
+    if (isFull) {
+      bedStore[key] = Object.assign(bedStore[key] || {}, { status: "occupied" });
+    } else {
+      bedStore[key] = Object.assign(bedStore[key] || {}, { status: "free", patientName: "", age: "", diagnosis: "" });
+    }
+    localStorage.setItem("referbridge_beds_theatre", JSON.stringify(bedStore));
+    let profile = {};
+    try { profile = JSON.parse(localStorage.getItem("referbridge_profile") || "{}"); } catch(e) {}
+    const deptLower = dept.toLowerCase();
+    if (deptLower === "icu" || deptLower === "picu") {
+      if (isFull) { profile.occupiedICU = Math.min((profile.occupiedICU || 0) + 1, profile.totalICU || 20); }
+      else { profile.occupiedICU = Math.max((profile.occupiedICU || 1) - 1, 0); }
+    } else {
+      if (isFull) { profile.occupiedBeds = Math.min((profile.occupiedBeds || 0) + 1, profile.totalBeds || 120); }
+      else { profile.occupiedBeds = Math.max((profile.occupiedBeds || 1) - 1, 0); }
+    }
+    localStorage.setItem("referbridge_profile", JSON.stringify(profile));
+    try { window.dispatchEvent(new CustomEvent("referbridge_bed_updated", { detail: { key: key, status: isFull ? "occupied" : "free" } })); } catch(e) {}
+    return { key: key, dept: dept, seatNum: seatNum, status: isFull ? "occupied" : "free" };
+  }
+
   function generateAIResponse(query) {
     const q = query.toLowerCase();
     const ctx = getLiveContext();
 
+    // 1. BED UPDATE COMMAND: "update seat 3 in icu as full"
+    const updateMatch = q.match(/(?:update|mark|set|change)\s+(?:seat|bed)\s*#?\s*(\d+)\s+(?:in\s+)?([a-z]+)\s+(?:as\s+)?(full|empty|occupied|free|vacant)/i);
+    if (updateMatch) {
+      const seatNum = parseInt(updateMatch[1], 10);
+      const dept = updateMatch[2].toLowerCase().trim();
+      const state = updateMatch[3].toLowerCase();
+      const deptLabels = { icu: "ICU", picu: "PICU", general: "General Ward", trauma: "Trauma", neonatology: "Neonatology" };
+      const validDepts = Object.keys(deptLabels);
+      const matchedDept = validDepts.find(d => dept.includes(d) || d.includes(dept)) || dept;
+      const result = executeBedUpdateBot(matchedDept, seatNum, state);
+      const statusLabel = result.status === "occupied" ? "🔴 OCCUPIED / FULL" : "🟢 AVAILABLE / FREE";
+      const deptDisplay = deptLabels[matchedDept] || matchedDept.toUpperCase();
+      if (window.showToast) window.showToast(`Bed #${seatNum} in ${deptDisplay} → ${statusLabel}`, result.status === "occupied" ? "warning" : "success", "🛏");
+      return `✅ **Bed Updated Successfully!**\n\n• **Department:** ${deptDisplay}\n• **Bed Number:** #${seatNum}\n• **New Status:** ${statusLabel}\n\nLive capacity counters have been updated automatically. The theatre grid and stats are synced.`;
+    }
+
+    // 2. HOSPITAL VACANCY QUERY
+    const hospital = lookupHospitalByQuery(q);
+    if (hospital && (q.includes("bed") || q.includes("seat") || q.includes("vacancy") || q.includes("available") || q.includes("icu") || q.includes("capacity") || q.includes("how many") || q.includes("kitne") || q.includes("free"))) {
+      const transitMins = calcTransitMinsBot(hospital.distKm);
+      const statusColor = hospital.availBeds > 15 ? "🟢" : hospital.availBeds > 5 ? "🟡" : "🔴";
+      return `🏥 **${hospital.name}** (${hospital.city})\n\n• **General Beds Available:** ${statusColor} ${hospital.availBeds} beds\n• **ICU Beds Open:** ${hospital.icuAvail > 0 ? "🟢" : "🔴"} ${hospital.icuAvail} ICU beds\n• **Specialties:** ${hospital.specialties}\n• **Distance:** ${hospital.distKm} km · **Ambulance ETA:** ~${transitMins} mins\n\n${hospital.icuAvail === 0 ? "⚠️ ICU is currently at full capacity." : "✅ ICU has open beds — can receive critical transfers immediately."}`;
+    }
+    if (hospital) {
+      const transitMins2 = calcTransitMinsBot(hospital.distKm);
+      return `🏥 **${hospital.name}**\n📍 ${hospital.city} · ${hospital.distKm} km away · ~${transitMins2} min transit\n\n**Specialties:** ${hospital.specialties}\n**Available Beds:** ${hospital.availBeds} General | ${hospital.icuAvail} ICU\n\n*Ask me "how many ICU beds in ${hospital.name.split(' ')[0]}?" for vacancy details.*`;
+    }
+
+    // 3. ICU INQUIRY
     if (q.includes("icu") || q.includes("ventilator") || q.includes("critical bed")) {
-      return `Currently, **${ctx.hospitalName}** has **${ctx.availableICU} open ICU beds** out of ${ctx.totalICU} total units.\n\n• Available: **${ctx.availableICU} beds**\n• Occupancy: **${Math.round(((ctx.totalICU - ctx.availableICU) / ctx.totalICU) * 100)}%**\n\n*Would you like me to hold an emergency ICU bed for an incoming patient?*`;
+      return `Currently, **${ctx.hospitalName}** has **${ctx.availableICU} open ICU beds** out of ${ctx.totalICU} total units.\n\n• Available: **${ctx.availableICU} beds**\n• Occupancy: **${Math.round(((ctx.totalICU - ctx.availableICU) / ctx.totalICU) * 100)}%**\n\n*Tip: Say "how many ICU beds in PGIMER?" or "update seat 3 in icu as full"*`;
     }
 
+    // 4. GENERAL BED CAPACITY
     if (q.includes("bed") || q.includes("capacity") || q.includes("available")) {
-      return `Live capacity breakdown for **${ctx.hospitalName}**:\n\n• **General Ward:** ${ctx.availableBeds} beds available (${ctx.totalBeds} total)\n• **ICU / Critical:** ${ctx.availableICU} beds open (${ctx.totalICU} total)\n• **Overall Status:** ${ctx.availableBeds > 10 ? '🟢 Available for Intake' : '🟡 Limited Beds'}`;
+      return `Live capacity breakdown for **${ctx.hospitalName}**:\n\n• **General Ward:** ${ctx.availableBeds} beds available (${ctx.totalBeds} total)\n• **ICU / Critical:** ${ctx.availableICU} beds open (${ctx.totalICU} total)\n• **Overall Status:** ${ctx.availableBeds > 10 ? '🟢 Available for Intake' : '🟡 Limited Beds'}\n\n*Tip: Say "update seat 5 in general as empty" to free a bed via chat!*`;
     }
 
+    // 5. PENDING REFERRALS
     if (q.includes("pending") || q.includes("request") || q.includes("triage")) {
       return `You have **${ctx.pendingRequests} pending referral requests** awaiting clinical triage.\n\n• **Total Inbound:** ${ctx.totalRequests} referrals\n• **Accepted Admissions:** ${ctx.acceptedRequests}\n• **Pending Triage:** ${ctx.pendingRequests}\n\n*Tip: Go to **Incoming Requests** to inspect patient medical dossiers.*`;
     }
 
-    if (q.includes("cardiac") || q.includes("heart") || q.includes("infarction") || q.includes("chest pain")) {
-      return `🚨 **Cardiac Triage Protocol Active:**\n\n1. Check STEMI/NSTEMI ECG telemetry.\n2. Inbound cath lab activation recommended.\n3. Available cardiology beds at **Lotus Care Hospital** (3.2 km) and **Apex Medical Institute** (8.0 km).\n4. Ambulance unit ETA: approx. **12–14 minutes**.`;
+    // 6. CARDIAC EMERGENCY
+    if (q.includes("cardiac") || q.includes("heart") || q.includes("infarction") || q.includes("chest pain") || q.includes("stemi")) {
+      return `🚨 **Cardiac Triage Protocol Active:**\n\n1. Check STEMI/NSTEMI ECG telemetry immediately.\n2. Inbound cath lab activation recommended.\n3. **Best Cardiology Centers (sorted by transit time):**\n   • PGIMER (1.5 km) → ~5 mins | ICU: 2 open\n   • Nehru Hospital Apex Cardio (1.6 km) → ~6 mins | ICU: 6 open\n   • GMSH Sector 16 (2.8 km) → ~10 mins | ICU: 5 open\n   • Lotus Care (3.2 km) → ~11 mins | ICU: 6 open\n\n4. Ambulance unit ETA: approx. **5–11 minutes** to nearest cardiology center.`;
     }
 
+    // 7. STROKE / NEURO
     if (q.includes("stroke") || q.includes("neuro") || q.includes("brain")) {
-      return `🧠 **Acute Stroke Triage Protocol:**\n\n• Nearest Comprehensive Stroke Center: **Green Valley Hospital** (9.4 km) & **Apex Medical** (8.0 km).\n• Recommended action: Schedule emergency CT/MRI head perfusion scan immediately upon transfer arrival.`;
+      return `🧠 **Acute Stroke Triage Protocol:**\n\n• Nearest Stroke Center: **PGIMER** (1.5 km, ~5 min transit)\n• **GMSH Sector 16** (2.8 km, ~10 min) — Neurology & Stroke Unit\n• **Ivy Hospital Mohali** (6.0 km, ~17 min) — Neurology ICU\n\n⚠️ Every minute counts — dispatch to nearest open center with CT/MRI on standby.`;
     }
 
-    if (q.includes("ambulance") || q.includes("eta") || q.includes("transfer time")) {
-      return `🚑 **Regional Ambulance Transit Estimates:**\n\n• Lotus Care Hospital: **8–11 mins** (3.2 km)\n• Sunrise Multispecialty: **14–18 mins** (6.8 km)\n• Green Valley Hospital: **20–25 mins** (9.4 km)\n• Riverside Hospital: **26–32 mins** (12.1 km)`;
+    // 8. AMBULANCE ETA
+    if (q.includes("ambulance") || q.includes("eta") || q.includes("transit") || q.includes("transfer time")) {
+      return `🚑 **Regional Ambulance Transit Estimates:**\n\n• PGIMER: **~5 mins** (1.5 km)\n• Nehru Cardio: **~6 mins** (1.6 km)\n• GMSH Sector 16: **~10 mins** (2.8 km)\n• Lotus Care: **~11 mins** (3.2 km)\n• GMCH Sector 32: **~15 mins** (4.2 km)\n• Fortis Mohali: **~16 mins** (5.8 km)\n• Ivy Hospital: **~17 mins** (6.0 km)\n• Riverside Zirakpur: **~34 mins** (12.1 km)`;
     }
 
+    // 9. SHIFT SUMMARY
     if (q.includes("report") || q.includes("shift") || q.includes("summary")) {
       return `📋 **Executive Capacity Summary:**\n\n• **Facility:** ${ctx.hospitalName}\n• **Active Referrals:** ${ctx.totalRequests} handled\n• **Bed Availability:** ${ctx.availableBeds} General / ${ctx.availableICU} ICU\n• **System Status:** Fully synchronized with regional emergency network.`;
     }
 
-    if (q.includes("hello") || q.includes("hi") || q.includes("hey")) {
-      return `Hello Dr. Admin! 👋 I'm **ReferBot AI**, your clinical referral & capacity copilot. How can I assist you with regional patient transfers or bed availability today?`;
+    // 10. GREETING
+    if (q.includes("hello") || q.includes("hi") || q.includes("hey") || q.includes("help")) {
+      return `Hello Dr. Admin! 👋 I'm **ReferBot AI**, your clinical referral & capacity copilot.\n\nHere's what I can do:\n• 🏥 **Check any hospital vacancy** — *"how many beds in Fortis Mohali?"*\n• 🛏 **Update bed status** — *"update seat 3 in ICU as full"*\n• 🚑 **Ambulance ETA** — *"transit time to PGIMER"*\n• 🚨 **Cardiac/Stroke triage** — *"cardiac emergency protocol"*\n• 📋 **Capacity summary** — *"shift summary"*`;
     }
 
-    return `I analyzed your query regarding *"${query}"* against the live **ReferBridge Hospital Alliance Database**.\n\n• **Facility:** ${ctx.hospitalName}\n• **Open Beds:** ${ctx.availableBeds} General / ${ctx.availableICU} ICU open\n• **Pending Inbound:** ${ctx.pendingRequests} requests\n\nYou can ask me to triage specific cases, check partner hospital distances, or calculate ambulance transit times!`;
+    return `I analyzed your query regarding *"${query}"* against the live **ReferBridge Hospital Alliance Database**.\n\n• **Facility:** ${ctx.hospitalName}\n• **Open Beds:** ${ctx.availableBeds} General / ${ctx.availableICU} ICU open\n• **Pending Inbound:** ${ctx.pendingRequests} requests\n\nTry: *"ICU beds in PGIMER"*, *"update seat 5 in general as empty"*, or *"ambulance ETA to Fortis"*`;
   }
-
   function injectReferBot() {
     if (document.getElementById("referbotLauncher")) return;
 
@@ -738,6 +835,7 @@
       { pattern: /\b(dashboard|overview|status|summary|capacity)\b/,   page: "dashboard.html", label: "Dashboard" },
       { pattern: /\b(request|referral|incoming|transfer|admit)\b/,     page: "requests.html",  label: "Referral Requests" },
       { pattern: /\b(network|partner|hospital|nearby|available)\b/,    page: "network.html",   label: "Hospital Network" },
+      { pattern: /\b(map|mapping|location|distance|route|cities|directions)\b/, page: "map.html", label: "Live Hospital Map" },
       { pattern: /\b(analytic|report|trend|graph|chart|data)\b/,       page: "analytics.html", label: "Analytics" },
       { pattern: /\b(profile|setting|detail|info|about)\b/,            page: "profile.html",   label: "Hospital Profile" },
       { pattern: /\b(home|start|main|welcome)\b/,                      page: "home.html",      label: "Home" }

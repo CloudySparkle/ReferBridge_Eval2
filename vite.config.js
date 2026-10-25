@@ -20,7 +20,8 @@ export default defineConfig({
         beds_legacy: resolve(__dirname, 'beds.html'),
         profile_legacy: resolve(__dirname, 'profile.html'),
         analytics_legacy: resolve(__dirname, 'analytics.html'),
-        signup_legacy: resolve(__dirname, 'signup.html')
+        signup_legacy: resolve(__dirname, 'signup.html'),
+        map: resolve(__dirname, 'map.html')
       }
     }
   }

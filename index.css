@@ -423,3 +423,137 @@ body {
   .form-panel { padding: 26px 18px; }
   .form-top h1 { font-size: 24px; }
 }
+
+/* ── Unified Auth Split-Banner & Mode Switcher ────────────────────────── */
+.auth-segment-bar {
+  display: flex;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--rb-border);
+  margin-bottom: 20px;
+}
+.auth-seg-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--rb-text-muted);
+  font: 700 12.5px var(--font-body);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.auth-seg-btn.active {
+  background: rgba(20, 228, 184, 0.15);
+  color: var(--rb-teal);
+  border: 1px solid rgba(20, 228, 184, 0.35);
+  box-shadow: 0 4px 12px rgba(20, 228, 184, 0.15);
+}
+
+/* Clean Welcome Overlay directly over the ReferBridge background */
+.welcome-banner-split {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 36px 36px 100px;
+  background: linear-gradient(180deg, rgba(6, 24, 38, 0.28) 0%, rgba(6, 24, 38, 0.68) 85%);
+  backdrop-filter: blur(1.5px);
+  /* Green polygon removed so underlying ReferBridge background is fully visible */
+  clip-path: none;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #fff;
+}
+[data-theme="light"] .welcome-banner-split {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.72) 85%);
+  color: #0f172a;
+}
+.welcome-banner-split.mode-signup {
+  background: linear-gradient(180deg, rgba(6, 24, 38, 0.28) 0%, rgba(6, 24, 38, 0.68) 85%);
+  clip-path: none;
+}
+[data-theme="light"] .welcome-banner-split.mode-signup {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.72) 85%);
+}
+.welcome-split-content {
+  position: relative;
+  z-index: 7;
+}
+.welcome-split-content h2 {
+  font: 800 36px var(--font-display);
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8), 0 0 25px rgba(34, 200, 255, 0.35);
+}
+[data-theme="light"] .welcome-split-content h2 {
+  color: #0f172a;
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.9);
+}
+.welcome-split-content p {
+  font: 500 15px var(--font-body);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 26px;
+  max-width: 320px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+}
+[data-theme="light"] .welcome-split-content p {
+  color: #334155;
+  text-shadow: none;
+}
+.btn-banner-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 36px;
+  border-radius: var(--rb-radius-full);
+  border: 2px solid #fff;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font: 700 13px var(--font-body);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 15px rgba(255, 255, 255, 0.2);
+}
+.btn-banner-switch:hover {
+  background: var(--rb-teal);
+  border-color: var(--rb-teal);
+  color: #061826;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(20, 228, 184, 0.45);
+}
+[data-theme="light"] .btn-banner-switch {
+  border-color: #0f172a;
+  background: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
+[data-theme="light"] .btn-banner-switch:hover {
+  background: #0f172a;
+  color: #fff;
+}
+
+.btn-quick-demo {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(34, 200, 255, 0.1);
+  border: 1px solid rgba(34, 200, 255, 0.3);
+  color: var(--rb-cyan);
+  font: 600 11px var(--font-mono);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-quick-demo:hover {
+  background: rgba(34, 200, 255, 0.2);
+  border-color: var(--rb-cyan);
+}
+

@@ -13,7 +13,14 @@ function getStorage() {
 }
 
 export const authService = {
-  async signIn({ email, password }) {
+  /**
+   * Sign in with email and password.
+   * @param {object} params
+   * @param {string} params.email
+   * @param {string} params.password
+   * @param {boolean} params.rememberMe - If true, session persists across browser restarts.
+   */
+  async signIn({ email, password, rememberMe = false }) {
     if (isSupabaseConfigured) {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -27,6 +34,21 @@ export const authService = {
         .eq('id', data.user.id)
         .single();
 
+      // Persist remember-me flag in localStorage so AuthContext can restore on reload
+      const storage = getStorage();
+      if (rememberMe) {
+        storage.setItem('referbridge_remember', 'true');
+        storage.setItem('referbridge_auth', JSON.stringify({
+          loggedIn: true,
+          email: email,
+          name: profile?.display_name || email.split('@')[0]
+        }));
+      } else {
+        // Do not persist — Supabase session will survive only per its own config
+        storage.removeItem('referbridge_remember');
+        storage.removeItem('referbridge_auth');
+      }
+
       return {
         user: data.user,
         session: data.session,
@@ -39,23 +61,27 @@ export const authService = {
       };
     }
 
+    // ── Offline / Demo-without-Supabase fallback ────────────────────────────
+    // IMPORTANT: No hardcoded credentials. Only registered users from signup.
     const storage = getStorage();
     const mockUsers = JSON.parse(storage.getItem('referbridge_users') || '[]');
-    const isDefaultAdmin = email.toLowerCase() === 'admin@referbridge.com' && password === 'admin123';
+
     const foundUser = mockUsers.find(
       (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
     );
 
-    if (!isDefaultAdmin && !foundUser) {
-      throw new Error('Invalid email or password. Please verify credentials or register.');
+    if (!foundUser) {
+      throw new Error(
+        'Invalid email or password. Please register your hospital via the signup page first.'
+      );
     }
 
     const mockProfile = {
-      id: foundUser ? foundUser.id || 'mock-user-id' : 'mock-admin-id',
+      id: foundUser.id || 'user-' + foundUser.email,
       email: email,
-      display_name: foundUser ? foundUser.name : 'Dr. Sharma (Admin)',
-      role: isDefaultAdmin ? 'admin' : (foundUser?.role || 'hospital_staff'),
-      hospital_id: 'c1111111-1111-1111-1111-111111111111',
+      display_name: foundUser.name || foundUser.hospitalName || email.split('@')[0],
+      role: foundUser.role || 'hospital_staff',
+      hospital_id: foundUser.hospitalId || null,
       account_approval_status: 'approved'
     };
 
@@ -65,19 +91,34 @@ export const authService = {
       isDemoMode: true
     };
 
-    storage.setItem(MOCK_STORAGE_KEY, JSON.stringify(mockAuthData));
-    storage.setItem('referbridge_auth', JSON.stringify({
-      loggedIn: true,
-      email: email,
-      name: mockProfile.display_name
-    }));
-    storage.setItem('loggedIn', 'true');
-    storage.setItem('adminEmail', email);
+    if (rememberMe) {
+      // Persist in localStorage so the user stays logged in on next visit
+      storage.setItem(MOCK_STORAGE_KEY, JSON.stringify(mockAuthData));
+      storage.setItem('referbridge_remember', 'true');
+      storage.setItem('referbridge_auth', JSON.stringify({
+        loggedIn: true,
+        email: email,
+        name: mockProfile.display_name
+      }));
+      storage.setItem('loggedIn', 'true');
+      storage.setItem('adminEmail', email);
+    } else {
+      // Persist only in sessionStorage — clears automatically when tab/browser closes
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(mockAuthData));
+        sessionStorage.setItem('loggedIn', 'true');
+        sessionStorage.setItem('adminEmail', email);
+      }
+      // Ensure nothing is saved to localStorage for this session
+      storage.removeItem(MOCK_STORAGE_KEY);
+      storage.removeItem('referbridge_remember');
+      storage.removeItem('referbridge_auth');
+    }
 
     return mockAuthData;
   },
 
-  async signUp({ email, password, displayName, role = 'hospital_staff', hospitalId = null }) {
+  async signUp({ email, password, displayName, hospitalName, role = 'hospital_staff', hospitalId = null }) {
     if (isSupabaseConfigured) {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -104,6 +145,7 @@ export const authService = {
       email,
       password,
       name: displayName,
+      hospitalName: hospitalName || '',
       role,
       hospitalId,
       created_at: new Date().toISOString()
@@ -119,9 +161,16 @@ export const authService = {
     }
     const storage = getStorage();
     storage.removeItem(MOCK_STORAGE_KEY);
+    storage.removeItem('referbridge_remember');
     storage.setItem('referbridge_auth', JSON.stringify({ loggedIn: false }));
     storage.removeItem('loggedIn');
     storage.removeItem('adminEmail');
+    // Also clear any session-only data
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem(MOCK_STORAGE_KEY);
+      sessionStorage.removeItem('loggedIn');
+      sessionStorage.removeItem('adminEmail');
+    }
   },
 
   async getCurrentSession() {
@@ -148,35 +197,36 @@ export const authService = {
     }
 
     const storage = getStorage();
-    const mockAuth = storage.getItem(MOCK_STORAGE_KEY);
-    if (mockAuth) {
-      try {
-        return JSON.parse(mockAuth);
-      } catch (e) {
-        return null;
-      }
-    }
-    const legacyAuth = storage.getItem('referbridge_auth');
-    if (legacyAuth) {
-      try {
-        const parsed = JSON.parse(legacyAuth);
-        if (parsed.loggedIn) {
-          return {
-            user: { id: 'legacy-user', email: parsed.email },
-            profile: {
-              id: 'legacy-user',
-              display_name: parsed.name || 'Dr. Sharma',
-              email: parsed.email,
-              role: 'admin',
-              account_approval_status: 'approved'
-            },
-            isDemoMode: true
-          };
+
+    // Check if user opted to be remembered (localStorage persisted session)
+    const remembered = storage.getItem('referbridge_remember');
+    if (remembered === 'true') {
+      const mockAuth = storage.getItem(MOCK_STORAGE_KEY);
+      if (mockAuth) {
+        try {
+          return JSON.parse(mockAuth);
+        } catch (e) {
+          // Corrupt data — clear it
+          storage.removeItem(MOCK_STORAGE_KEY);
+          storage.removeItem('referbridge_remember');
+          return null;
         }
-      } catch (e) {
-        return null;
       }
     }
+
+    // Check session-only (non-remembered) login via sessionStorage
+    if (typeof sessionStorage !== 'undefined') {
+      const sessionAuth = sessionStorage.getItem(MOCK_STORAGE_KEY);
+      if (sessionAuth) {
+        try {
+          return JSON.parse(sessionAuth);
+        } catch (e) {
+          sessionStorage.removeItem(MOCK_STORAGE_KEY);
+          return null;
+        }
+      }
+    }
+
     return null;
   }
 };

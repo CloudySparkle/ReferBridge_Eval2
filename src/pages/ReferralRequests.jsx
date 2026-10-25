@@ -23,6 +23,9 @@ export default function ReferralRequests() {
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCaseModal, setSelectedCaseModal] = useState(null);
+  const [denyTargetModal, setDenyTargetModal] = useState(null);
+  const [rerouteSelectedHospId, setRerouteSelectedHospId] = useState('');
+  const [rerouteReasonText, setRerouteReasonText] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   // New Referral Form
@@ -429,7 +432,14 @@ export default function ReferralRequests() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleUpdateStatus(ref.id, 'Rejected')}
+                          onClick={() => {
+                            setDenyTargetModal(ref);
+                            const isCardio = (ref.patient?.primary_condition || ref.referral_reason || '').toLowerCase().includes('cardio') ||
+                                             (ref.patient?.primary_condition || ref.referral_reason || '').toLowerCase().includes('heart');
+                            const match = hospitals.find(h => h.specialties?.some(s => s.toLowerCase().includes('cardio')) && (h.icu_beds_available > 0 || h.available_beds > 0)) || hospitals[0];
+                            if (match) setRerouteSelectedHospId(match.id);
+                            setRerouteReasonText(isCardio ? 'Local facility ICU and Cardiac Cath Lab at capacity; rerouting emergency cardio case to partner hospital with open ICU.' : 'Hospital beds full; transferring case to alternate partner facility.');
+                          }}
                           style={{
                             padding: '8px 14px',
                             borderRadius: 8,
@@ -441,7 +451,7 @@ export default function ReferralRequests() {
                             cursor: 'pointer'
                           }}
                         >
-                          Decline
+                          Decline &amp; Reroute
                         </button>
                       </div>
                     )}
@@ -724,7 +734,7 @@ export default function ReferralRequests() {
                     <option value="">-- Select receiving hospital --</option>
                     {hospitals.map((h) => (
                       <option key={h.id} value={h.id}>
-                        {h.name} ({h.available_beds} beds free, {h.icu_beds_available} ICU)
+                        [{h.city || 'Tricity'} · {h.category === 'Government' ? 'Govt' : 'Pvt'}] {h.name} ({h.available_beds} beds free, {h.icu_beds_available} ICU)
                       </option>
                     ))}
                   </select>
@@ -855,6 +865,182 @@ export default function ReferralRequests() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+        {/* Denial & Alternate Referral Reroute Modal */}
+        {denyTargetModal && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(2, 6, 23, 0.75)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: 20
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                maxWidth: 620,
+                background: 'var(--rb-panel-solid, #0a2133)',
+                borderRadius: 16,
+                border: '1px solid var(--rb-border)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+                overflow: 'hidden'
+              }}
+            >
+              <div
+                style={{
+                  padding: '18px 24px',
+                  borderBottom: '1px solid var(--rb-border)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}
+              >
+                <div>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: '#ef4444', background: 'rgba(239,68,68,0.15)', padding: '2px 8px', borderRadius: 4 }}>
+                    CAPACITY FULL · REFERRAL REROUTE
+                  </span>
+                  <h3 style={{ margin: '4px 0 0', fontSize: 18, color: '#fff' }}>
+                    Deny Request &amp; Select Alternate Hospital
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDenyTargetModal(null)}
+                  style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: 20, cursor: 'pointer' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ padding: 24, maxHeight: '70vh', overflowY: 'auto' }}>
+                <div style={{ padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', marginBottom: 16 }}>
+                  <div style={{ fontSize: 12, color: 'var(--rb-text-muted)' }}>Case {denyTargetModal.referral_code}</div>
+                  <strong style={{ display: 'block', fontSize: 14, color: '#fff', margin: '2px 0 4px' }}>
+                    {denyTargetModal.patient?.full_name || 'Patient'} ({denyTargetModal.patient?.age || '54'}y) — {denyTargetModal.referral_reason}
+                  </strong>
+                  <span style={{ fontSize: 11, color: 'var(--rb-teal)', fontWeight: 700 }}>
+                    ❤️ Primary Specialty: {(denyTargetModal.patient?.primary_condition || '').includes('Cardio') || (denyTargetModal.referral_reason || '').includes('Cardio') ? 'Cardiology (Heart Related Emergency)' : 'Emergency Specialty'}
+                  </span>
+                </div>
+
+                <div style={{ padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px dashed rgba(245,158,11,0.3)', marginBottom: 16, fontSize: 12, color: 'var(--rb-text-main)' }}>
+                  ⚠️ Our facility is unable to admit (Beds / ICU Full). Select the best suited partner hospital below to reroute this case.
+                </div>
+
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--rb-text-muted)', marginBottom: 8 }}>
+                    ★ RECOMMENDED SPECIALTY HOSPITALS:
+                  </label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {hospitals
+                      .filter(h => h.available_beds > 0 || (h.icu_beds_available && h.icu_beds_available > 0))
+                      .slice(0, 3)
+                      .map((h, i) => (
+                        <label
+                          key={h.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            padding: '10px 14px',
+                            borderRadius: 8,
+                            border: `1px solid ${rerouteSelectedHospId === h.id ? 'var(--rb-teal)' : 'var(--rb-border)'}`,
+                            background: rerouteSelectedHospId === h.id ? 'rgba(20,228,184,0.1)' : 'rgba(255,255,255,0.02)',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <input
+                            type="radio"
+                            name="rerouteTargetRadio"
+                            value={h.id}
+                            checked={rerouteSelectedHospId === h.id}
+                            onChange={(e) => setRerouteSelectedHospId(e.target.value)}
+                          />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <b style={{ color: '#fff', fontSize: 13 }}>{h.name}</b>
+                              <span style={{ fontSize: 9, fontWeight: 800, background: h.category === 'Government' ? '#0284c7' : '#8b5cf6', color: '#fff', padding: '1px 5px', borderRadius: 3 }}>
+                                {h.category}
+                              </span>
+                            </div>
+                            <small style={{ color: 'var(--rb-text-muted)', display: 'block' }}>
+                              📍 {h.city} · Beds: {h.available_beds} · ICU: {h.icu_beds_available}
+                            </small>
+                          </div>
+                        </label>
+                      ))}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--rb-text-muted)', marginBottom: 4 }}>
+                    Or Select From Entire Network:
+                  </label>
+                  <select
+                    value={rerouteSelectedHospId}
+                    onChange={(e) => setRerouteSelectedHospId(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--rb-border)', background: 'rgba(6,24,38,0.8)', color: '#fff', fontSize: 13 }}
+                  >
+                    {hospitals.map(h => (
+                      <option key={h.id} value={h.id}>
+                        {h.name} ({h.category}) — {h.city} [Available Beds: {h.available_beds}]
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--rb-text-muted)', marginBottom: 4 }}>
+                    Reroute Justification / Clinical Handoff Notes:
+                  </label>
+                  <textarea
+                    rows="2"
+                    value={rerouteReasonText}
+                    onChange={(e) => setRerouteReasonText(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--rb-border)', background: 'rgba(6,24,38,0.8)', color: '#fff', fontSize: 13, fontFamily: 'inherit' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ padding: '16px 24px', borderTop: '1px solid var(--rb-border)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setDenyTargetModal(null)}
+                  style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--rb-border)', background: 'transparent', color: 'var(--rb-text-muted)', fontSize: 13, cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await handleUpdateStatus(denyTargetModal.id, 'Rejected');
+                    setDenyTargetModal(null);
+                  }}
+                  style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: 13, cursor: 'pointer' }}
+                >
+                  Decline Without Reroute
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const targetHosp = hospitals.find(h => h.id === rerouteSelectedHospId) || hospitals[0];
+                    setReferrals(prev => prev.map(r => r.id === denyTargetModal.id ? { ...r, status: `Rerouted to ${targetHosp.name}`, rerouted_to: targetHosp.name } : r));
+                    showToast(`Referral ${denyTargetModal.referral_code} rerouted to ${targetHosp.name}!`, 'success', '🚑');
+                    setDenyTargetModal(null);
+                  }}
+                  style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+                >
+                  🚀 Confirm Reroute &amp; Refer
+                </button>
+              </div>
             </div>
           </div>
         )}

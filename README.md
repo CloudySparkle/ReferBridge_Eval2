@@ -129,11 +129,25 @@ Creates an optimized, minified production distribution in `/dist`.
 
 ---
 
-## 4. Evaluation Credentials
+## 4. Creating Login Credentials
 
-- **Admin Account**: `admin@referbridge.com`
-- **Password**: `admin123`
-- **1-Click Auto Fill**: Click **"⚡ 1-Click Auto Fill"** on the Login card to immediately populate and test authentication.
+ReferBridge does **not** ship with hardcoded demo credentials. All logins use real hospital accounts.
+
+### When Supabase is configured (recommended)
+1. Open `signup.html` or navigate to the **Register Hospital** link on the login page.
+2. Fill in your Admin Name, Hospital Name, official email and password.
+3. After registration you will be redirected to the login page.
+4. Log in with the email and password you just registered.
+
+### When running offline (no Supabase keys)
+The same signup flow works using localStorage:
+1. Open `signup.html` and complete the registration form.
+2. Your account is saved locally in the browser.
+3. Log in on `index.html` using those same credentials.
+
+> **"Remember this device"** checkbox on the login page:
+> - **Checked** → Session is persisted in `localStorage`; you stay logged in after closing the browser.
+> - **Unchecked** → Session is stored in `sessionStorage` only; you must log in again each new browser session.
 
 ---
 

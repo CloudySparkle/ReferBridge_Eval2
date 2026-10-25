@@ -274,6 +274,56 @@ function renderRadar(range) {
   radarShape.setAttribute("points", data.radar);
 }
 
+
+function renderTransitAnalytics(range) {
+  const m = ({"7":{"ambPct":58,"ambCount":98,"carPct":32,"carCount":54,"apexPct":10,"apexCount":17},"30":{"ambPct":61,"ambCount":415,"carPct":30,"carCount":204,"apexPct":9,"apexCount":61},"90":{"ambPct":64,"ambCount":1480,"carPct":28,"carCount":648,"apexPct":8,"apexCount":185}})[range] || ({"7":{"ambPct":58,"ambCount":98,"carPct":32,"carCount":54,"apexPct":10,"apexCount":17},"30":{"ambPct":61,"ambCount":415,"carPct":30,"carCount":204,"apexPct":9,"apexCount":61},"90":{"ambPct":64,"ambCount":1480,"carPct":28,"carCount":648,"apexPct":8,"apexCount":185}})[7];
+
+  const barAmb = document.getElementById("barTransitAmb");
+  const barCar = document.getElementById("barTransitCar");
+  const barApex = document.getElementById("barTransitApex");
+
+  const valAmb = document.getElementById("valTransitAmb");
+  const valCar = document.getElementById("valTransitCar");
+  const valApex = document.getElementById("valTransitApex");
+
+  const subAmb = document.getElementById("subTransitAmb");
+  const subCar = document.getElementById("subTransitCar");
+  const subApex = document.getElementById("subTransitApex");
+
+  if (barAmb) barAmb.style.width = m.ambPct + "%";
+  if (barCar) barCar.style.width = m.carPct + "%";
+  if (barApex) barApex.style.width = m.apexPct + "%";
+
+  if (valAmb) valAmb.textContent = m.ambPct + "%";
+  if (valCar) valCar.textContent = m.carPct + "%";
+  if (valApex) valApex.textContent = m.apexPct + "%";
+
+  if (subAmb) subAmb.textContent = m.ambCount + " dispatches";
+  if (subCar) subCar.textContent = m.carCount + " gate passes";
+  if (subApex) subApex.textContent = m.apexCount + " critical";
+}
+
+function renderLeaderboard(range) {
+  const container = document.getElementById("hospitalIntakeLeaderboard");
+  if (!container) return;
+
+  const list = ({"7":[{"name":"PGIMER Chandigarh (Sector 12)","type":"Govt","pct":41,"admissions":48,"color":"#22c8ff"},{"name":"GMCH Sector 32 Chandigarh","type":"Govt","pct":26,"admissions":31,"color":"#14e4b8"},{"name":"GMSH Sector 16 Chandigarh","type":"Govt","pct":15,"admissions":18,"color":"#0284c7"},{"name":"Fortis Hospital Mohali","type":"Private","pct":11,"admissions":13,"color":"#f59e0b"},{"name":"Max Super Speciality Mohali","type":"Private","pct":7,"admissions":8,"color":"#8b5cf6"}],"30":[{"name":"PGIMER Chandigarh (Sector 12)","type":"Govt","pct":43,"admissions":224,"color":"#22c8ff"},{"name":"GMCH Sector 32 Chandigarh","type":"Govt","pct":25,"admissions":130,"color":"#14e4b8"},{"name":"GMSH Sector 16 Chandigarh","type":"Govt","pct":14,"admissions":73,"color":"#0284c7"},{"name":"Fortis Hospital Mohali","type":"Private","pct":12,"admissions":62,"color":"#f59e0b"},{"name":"Max Super Speciality Mohali","type":"Private","pct":6,"admissions":31,"color":"#8b5cf6"}],"90":[{"name":"PGIMER Chandigarh (Sector 12)","type":"Govt","pct":45,"admissions":810,"color":"#22c8ff"},{"name":"GMCH Sector 32 Chandigarh","type":"Govt","pct":24,"admissions":432,"color":"#14e4b8"},{"name":"GMSH Sector 16 Chandigarh","type":"Govt","pct":13,"admissions":234,"color":"#0284c7"},{"name":"Fortis Hospital Mohali","type":"Private","pct":11,"admissions":198,"color":"#f59e0b"},{"name":"Max Super Speciality Mohali","type":"Private","pct":7,"admissions":126,"color":"#8b5cf6"}]})[range] || ({"7":[{"name":"PGIMER Chandigarh (Sector 12)","type":"Govt","pct":41,"admissions":48,"color":"#22c8ff"},{"name":"GMCH Sector 32 Chandigarh","type":"Govt","pct":26,"admissions":31,"color":"#14e4b8"},{"name":"GMSH Sector 16 Chandigarh","type":"Govt","pct":15,"admissions":18,"color":"#0284c7"},{"name":"Fortis Hospital Mohali","type":"Private","pct":11,"admissions":13,"color":"#f59e0b"},{"name":"Max Super Speciality Mohali","type":"Private","pct":7,"admissions":8,"color":"#8b5cf6"}],"30":[{"name":"PGIMER Chandigarh (Sector 12)","type":"Govt","pct":43,"admissions":224,"color":"#22c8ff"},{"name":"GMCH Sector 32 Chandigarh","type":"Govt","pct":25,"admissions":130,"color":"#14e4b8"},{"name":"GMSH Sector 16 Chandigarh","type":"Govt","pct":14,"admissions":73,"color":"#0284c7"},{"name":"Fortis Hospital Mohali","type":"Private","pct":12,"admissions":62,"color":"#f59e0b"},{"name":"Max Super Speciality Mohali","type":"Private","pct":6,"admissions":31,"color":"#8b5cf6"}],"90":[{"name":"PGIMER Chandigarh (Sector 12)","type":"Govt","pct":45,"admissions":810,"color":"#22c8ff"},{"name":"GMCH Sector 32 Chandigarh","type":"Govt","pct":24,"admissions":432,"color":"#14e4b8"},{"name":"GMSH Sector 16 Chandigarh","type":"Govt","pct":13,"admissions":234,"color":"#0284c7"},{"name":"Fortis Hospital Mohali","type":"Private","pct":11,"admissions":198,"color":"#f59e0b"},{"name":"Max Super Speciality Mohali","type":"Private","pct":7,"admissions":126,"color":"#8b5cf6"}]})[7];
+  container.innerHTML = list.map(item => `
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:4px;">
+        <span style="font-weight:600; color:var(--rb-text-main); display:inline-flex; align-items:center; gap:6px;">
+          <span style="font-size:9px; font-weight:800; padding:1px 5px; border-radius:3px; background:${item.type === 'Govt' ? '#0284c7' : '#8b5cf6'}; color:#fff;">${item.type}</span>
+          ${item.name}
+        </span>
+        <b style="color:${item.color};">${item.pct}% (${item.admissions})</b>
+      </div>
+      <div style="height:8px; width:100%; border-radius:4px; background:rgba(255,255,255,0.05); overflow:hidden;">
+        <div style="height:100%; width:${item.pct}%; border-radius:4px; background:${item.color}; transition:width 0.8s ease;"></div>
+      </div>
+    </div>
+  `).join("");
+}
+
 function renderAll() {
   const profile = getProfile();
   
@@ -311,6 +361,8 @@ function renderAll() {
   renderWeeklyBars(currentRange);
   renderDecisionMix(mockRequests);
   renderRadar(currentRange);
+  renderTransitAnalytics(currentRange);
+  renderLeaderboard(currentRange);
 }
 
 document.addEventListener("DOMContentLoaded", function () {

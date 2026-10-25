@@ -23,6 +23,8 @@ export default function HospitalNetwork() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
+  const [cityFilter, setCityFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
@@ -35,12 +37,17 @@ export default function HospitalNetwork() {
   // Form State
   const [hospitalForm, setHospitalForm] = useState({
     name: '',
+    category: 'Private',
+    city: 'Chandigarh',
+    district: '',
     address: '',
     phone: '',
+    website: '',
     specialties: '',
     total_beds: 100,
     available_beds: 20,
     icu_beds_available: 4,
+    emergency_services: false,
     latitude: 30.7333,
     longitude: 76.7794
   });
@@ -124,7 +131,7 @@ export default function HospitalNetwork() {
       });
   }, []);
 
-  // Update map markers when hospitals change
+  // Update map markers when filteredHospitals change
   useEffect(() => {
     if (!googleMapsReady || !googleMapInstance.current || !window.google) return;
 
@@ -132,33 +139,43 @@ export default function HospitalNetwork() {
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
-    hospitals.forEach((h) => {
+    filteredHospitals.forEach((h) => {
       if (!h.latitude || !h.longitude) return;
 
+      const isGov = h.category === 'Government';
+      const isAvailable = (h.available_beds || 0) > 0;
+
+      // Government hospitals use a square/diamond symbol with teal color; Private use circle with cyan/amber
       const marker = new window.google.maps.Marker({
         position: { lat: Number(h.latitude), lng: Number(h.longitude) },
         map: googleMapInstance.current,
-        title: h.name,
+        title: `${h.name} (${h.category || 'Hospital'})`,
         icon: {
-          path: window.google.maps.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: h.available_beds > 0 ? '#14e4b8' : '#ff5465',
+          path: isGov ? window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW : window.google.maps.SymbolPath.CIRCLE,
+          scale: isGov ? 7 : 8,
+          fillColor: isGov ? (isAvailable ? '#14e4b8' : '#0d9488') : (isAvailable ? '#22c8ff' : '#f59e0b'),
           fillOpacity: 1,
           strokeColor: '#ffffff',
-          strokeWeight: 2
+          strokeWeight: 2,
+          rotation: isGov ? 0 : 0
         }
       });
 
       const infoContent = `
-        <div style="color:#061826; padding:6px; font-family:sans-serif;">
-          <strong style="font-size:14px; display:block;">${h.name}</strong>
-          <span style="font-size:12px; color:#555;">${h.address}</span>
-          <div style="margin-top:6px; font-size:12px;">
-            <b>Available Beds:</b> ${h.available_beds} · <b>ICU:</b> ${h.icu_beds_available}
+        <div style="color:#061826; padding:8px; font-family:sans-serif; max-width:240px;">
+          <div style="font-size:10px; font-weight:700; color:${isGov ? '#0d9488' : '#0284c7'}; text-transform:uppercase;">
+            ${isGov ? '🏛 Government Facility' : '🏥 Private Facility'} · ${h.city || 'Tricity'}
           </div>
-          <div style="font-size:11px; color:#0284c7; margin-top:4px;">
-            Specialties: ${Array.isArray(h.specialties) ? h.specialties.join(', ') : h.specialties}
+          <strong style="font-size:14px; display:block; margin:2px 0 4px;">${h.name}</strong>
+          <span style="font-size:11px; color:#555; display:block; margin-bottom:6px;">${h.address}</span>
+          <div style="padding:4px 6px; background:#f1f5f9; border-radius:4px; font-size:11px; margin-bottom:6px;">
+            <b>Available:</b> <span style="color:${isAvailable ? '#16a34a' : '#dc2626'}; font-weight:700;">${h.available_beds} beds</span> · <b>ICU:</b> ${h.icu_beds_available}
+            ${h.emergency_services ? ' · <span style="color:#dc2626; font-weight:700;">🆘 Emergency</span>' : ''}
           </div>
+          <div style="font-size:11px; color:#475569;">
+            <b>Specialties:</b> ${Array.isArray(h.specialties) ? h.specialties.join(', ') : (h.specialties || 'General')}
+          </div>
+          ${h.phone ? `<div style="font-size:11px; color:#0284c7; margin-top:4px;">📞 ${h.phone}</div>` : ''}
         </div>
       `;
 
@@ -169,7 +186,7 @@ export default function HospitalNetwork() {
 
       markersRef.current.push(marker);
     });
-  }, [hospitals, googleMapsReady]);
+  }, [filteredHospitals, googleMapsReady]);
 
   // Unique specialties for filter
   const allSpecialties = useMemo(() => {
@@ -188,14 +205,25 @@ export default function HospitalNetwork() {
   const filteredHospitals = useMemo(() => {
     let list = [...hospitals];
 
+    // City filter
+    if (cityFilter !== 'all') {
+      list = list.filter((h) => h.city === cityFilter);
+    }
+
+    // Category filter (Government / Private)
+    if (categoryFilter !== 'all') {
+      list = list.filter((h) => h.category === categoryFilter);
+    }
+
     // Search query
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
       list = list.filter(
         (h) =>
           h.name.toLowerCase().includes(q) ||
-          h.address.toLowerCase().includes(q) ||
-          (Array.isArray(h.specialties) ? h.specialties.join(' ') : h.specialties).toLowerCase().includes(q)
+          (h.address || '').toLowerCase().includes(q) ||
+          (h.city || '').toLowerCase().includes(q) ||
+          (Array.isArray(h.specialties) ? h.specialties.join(' ') : h.specialties || '').toLowerCase().includes(q)
       );
     }
 
@@ -203,9 +231,9 @@ export default function HospitalNetwork() {
     if (specialtyFilter !== 'all') {
       list = list.filter((h) => {
         if (Array.isArray(h.specialties)) {
-          return h.specialties.includes(specialtyFilter);
+          return h.specialties.some(s => s.toLowerCase().includes(specialtyFilter.toLowerCase()));
         }
-        return (h.specialties || '').includes(specialtyFilter);
+        return (h.specialties || '').toLowerCase().includes(specialtyFilter.toLowerCase());
       });
     }
 
@@ -214,6 +242,8 @@ export default function HospitalNetwork() {
       list = list.filter((h) => (h.available_beds || 0) > 0);
     } else if (availabilityFilter === 'icu') {
       list = list.filter((h) => (h.icu_beds_available || 0) > 0);
+    } else if (availabilityFilter === 'emergency') {
+      list = list.filter((h) => h.emergency_services === true);
     }
 
     // Sorting
@@ -224,11 +254,14 @@ export default function HospitalNetwork() {
       if (sortBy === 'total_beds') {
         return (b.total_beds || 0) - (a.total_beds || 0);
       }
+      if (sortBy === 'city') {
+        return (a.city || '').localeCompare(b.city || '');
+      }
       return a.name.localeCompare(b.name);
     });
 
     return list;
-  }, [hospitals, debouncedSearch, specialtyFilter, availabilityFilter, sortBy]);
+  }, [hospitals, debouncedSearch, specialtyFilter, availabilityFilter, cityFilter, categoryFilter, sortBy]);
 
   // Pagination
   const totalPages = Math.ceil(filteredHospitals.length / itemsPerPage);
@@ -248,12 +281,17 @@ export default function HospitalNetwork() {
     setEditingHospital(h);
     setHospitalForm({
       name: h.name,
+      category: h.category || 'Private',
+      city: h.city || 'Chandigarh',
+      district: h.district || '',
       address: h.address,
       phone: h.phone || '',
+      website: h.website || '',
       specialties: Array.isArray(h.specialties) ? h.specialties.join(', ') : h.specialties,
       total_beds: h.total_beds,
       available_beds: h.available_beds,
       icu_beds_available: h.icu_beds_available,
+      emergency_services: Boolean(h.emergency_services),
       latitude: h.latitude || 30.7333,
       longitude: h.longitude || 76.7794
     });
@@ -265,12 +303,17 @@ export default function HospitalNetwork() {
     setEditingHospital(null);
     setHospitalForm({
       name: '',
+      category: 'Private',
+      city: 'Chandigarh',
+      district: '',
       address: '',
       phone: '',
+      website: '',
       specialties: 'Emergency Care, General Medicine',
       total_beds: 120,
       available_beds: 25,
       icu_beds_available: 5,
+      emergency_services: false,
       latitude: 30.7333,
       longitude: 76.7794
     });
@@ -429,7 +472,7 @@ export default function HospitalNetwork() {
               >
                 {hospitals.map((h) => (
                   <option key={h.id} value={h.id}>
-                    {h.name} — {h.address}
+                    [{h.city || 'Tricity'} · {h.category === 'Government' ? 'Govt' : 'Pvt'}] {h.name} — {h.address}
                   </option>
                 ))}
               </select>
@@ -454,7 +497,7 @@ export default function HospitalNetwork() {
               >
                 {hospitals.map((h) => (
                   <option key={h.id} value={h.id}>
-                    {h.name} ({h.available_beds} beds free, {h.icu_beds_available} ICU)
+                    [{h.city || 'Tricity'} · {h.category === 'Government' ? 'Govt' : 'Pvt'}] {h.name} ({h.available_beds} beds free, {h.icu_beds_available} ICU)
                   </option>
                 ))}
               </select>
@@ -591,12 +634,41 @@ export default function HospitalNetwork() {
                   }}
                 />
 
-                {/* Render Hospital Radar Markers */}
-                {hospitals.map((h, i) => {
-                  const angle = (i / hospitals.length) * 2 * Math.PI;
-                  const radius = 100 + (i % 3) * 25;
+                {/* Render Route Polyline in Fallback Map if Route Result is active */}
+                {routeResult && (
+                  <svg
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      pointerEvents: 'none',
+                      zIndex: 1
+                    }}
+                  >
+                    <line
+                      x1="35%"
+                      y1="50%"
+                      x2="65%"
+                      y2="50%"
+                      stroke="#14e4b8"
+                      strokeWidth="3"
+                      strokeDasharray="6,4"
+                    />
+                  </svg>
+                )}
+
+                {/* Render Hospital Radar Markers based on active filter */}
+                {filteredHospitals.map((h, i) => {
+                  const count = Math.max(filteredHospitals.length, 1);
+                  const angle = (i / count) * 2 * Math.PI;
+                  const radius = 100 + (i % 3) * 30;
                   const x = Math.cos(angle) * radius;
                   const y = Math.sin(angle) * radius;
+                  const isGov = h.category === 'Government';
+                  const isAvailable = (h.available_beds || 0) > 0;
+                  const isOrigin = h.id === originHospitalId;
+                  const isDest = h.id === destHospitalId;
 
                   return (
                     <div
@@ -606,38 +678,46 @@ export default function HospitalNetwork() {
                         transform: `translate(${x}px, ${y}px)`,
                         cursor: 'pointer',
                         textAlign: 'center',
-                        zIndex: 2
+                        zIndex: isOrigin || isDest ? 5 : 2
                       }}
                       onClick={() => {
-                        showToast(`${h.name} — ${h.available_beds} beds free, ${h.icu_beds_available} ICU`, 'info', '🏥');
+                        showToast(`${h.name} (${h.city} · ${h.category}) — ${h.available_beds} beds free, ${h.icu_beds_available} ICU`, 'info', isGov ? '🏛' : '🏥');
                       }}
-                      title={`${h.name} (${h.address})`}
+                      title={`${h.name} (${h.city} · ${h.category})`}
                     >
                       <div
                         style={{
-                          width: 14,
-                          height: 14,
+                          width: isGov ? 16 : 14,
+                          height: isGov ? 16 : 14,
                           margin: '0 auto',
-                          borderRadius: '50%',
-                          background: h.available_beds > 0 ? '#14e4b8' : '#ff5465',
-                          boxShadow: `0 0 10px ${h.available_beds > 0 ? '#14e4b8' : '#ff5465'}`,
-                          border: '2px solid #ffffff'
+                          borderRadius: isGov ? '3px' : '50%',
+                          transform: isGov ? 'rotate(45deg)' : 'none',
+                          background: isGov ? '#14e4b8' : '#22c8ff',
+                          boxShadow: isOrigin || isDest
+                            ? '0 0 16px #ffffff, 0 0 8px #14e4b8'
+                            : `0 0 8px ${isGov ? '#14e4b8' : '#22c8ff'}`,
+                          border: isOrigin
+                            ? '3px solid #ff5465'
+                            : isDest
+                            ? '3px solid #10b981'
+                            : `2px solid ${isAvailable ? '#ffffff' : '#ef4444'}`
                         }}
                       />
                       <span
                         style={{
                           display: 'block',
                           fontSize: 10,
-                          fontWeight: 600,
-                          color: '#f0f7fd',
-                          background: 'rgba(6,24,38,0.85)',
+                          fontWeight: 700,
+                          color: isOrigin ? '#ff5465' : isDest ? '#10b981' : '#f0f7fd',
+                          background: 'rgba(6,24,38,0.92)',
                           padding: '2px 6px',
                           borderRadius: 4,
                           marginTop: 4,
+                          border: isOrigin ? '1px solid #ff5465' : isDest ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.1)',
                           whiteSpace: 'nowrap'
                         }}
                       >
-                        {h.name.split(' ')[0]}
+                        {isGov ? '🏛 ' : '🏥 '}{h.name.split(' ')[0]} {isOrigin ? '(Origin)' : isDest ? '(Dest)' : ''}
                       </span>
                     </div>
                   );
@@ -646,34 +726,40 @@ export default function HospitalNetwork() {
                 <div
                   style={{
                     position: 'absolute',
-                    bottom: 14,
-                    left: 14,
+                    bottom: 12,
+                    left: 12,
                     padding: '8px 14px',
                     borderRadius: 8,
-                    background: 'rgba(6,24,38,0.9)',
+                    background: 'rgba(6,24,38,0.92)',
                     border: '1px solid var(--rb-border)',
-                    fontSize: 12,
-                    color: 'var(--rb-text-muted)'
+                    fontSize: 11,
+                    color: 'var(--rb-text-muted)',
+                    display: 'flex',
+                    gap: 12,
+                    flexWrap: 'wrap'
                   }}
                 >
-                  🟢 Available Bed Capacity &nbsp;|&nbsp; 🔴 Capacity Full / Emergency Divert
+                  <span>🏛 <b>Govt:</b> Diamond (Teal)</span>
+                  <span>🏥 <b>Private:</b> Circle (Cyan)</span>
+                  <span>🟢 Available</span>
+                  <span>🔴 Full</span>
                 </div>
 
                 <div
                   style={{
                     position: 'absolute',
-                    top: 14,
-                    right: 14,
+                    top: 12,
+                    right: 12,
                     padding: '8px 14px',
                     borderRadius: 8,
-                    background: 'rgba(6,24,38,0.9)',
-                    border: '1px solid rgba(245,183,56,0.3)',
+                    background: 'rgba(6,24,38,0.92)',
+                    border: '1px solid rgba(34,200,255,0.25)',
                     fontSize: 11,
-                    color: '#f5b738',
+                    color: 'var(--rb-text-muted)',
                     maxWidth: 320
                   }}
                 >
-                  💡 <b>Google Maps API:</b> Set <code>VITE_GOOGLE_MAPS_API_KEY</code> in <code>.env</code> to enable full Google Maps tile rendering and live route polylines.
+                  <span style={{ color: 'var(--rb-cyan, #22c8ff)', fontWeight: 600 }}>Showing {filteredHospitals.length} hospitals</span> in Mohali, Zirakpur, Chandigarh &amp; Panchkula.
                 </div>
               </div>
             )}
@@ -714,49 +800,74 @@ export default function HospitalNetwork() {
           </div>
 
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            {/* City Filter */}
+            <select
+              value={cityFilter}
+              onChange={(e) => { setCityFilter(e.target.value); setCurrentPage(1); }}
+              style={{
+                padding: '10px 14px', borderRadius: 8,
+                background: cityFilter !== 'all' ? 'rgba(20,228,184,0.12)' : 'var(--rb-panel-solid, #0a2133)',
+                border: cityFilter !== 'all' ? '1px solid rgba(20,228,184,0.4)' : '1px solid var(--rb-border)',
+                color: cityFilter !== 'all' ? 'var(--rb-teal, #14e4b8)' : 'var(--rb-text-main, #fff)',
+                fontSize: 13, fontWeight: cityFilter !== 'all' ? 600 : 400
+              }}
+            >
+              <option value="all">All Cities</option>
+              <option value="Chandigarh">📍 Chandigarh</option>
+              <option value="Mohali">📍 Mohali</option>
+              <option value="Panchkula">📍 Panchkula</option>
+              <option value="Zirakpur">📍 Zirakpur</option>
+            </select>
+
+            {/* Category Filter */}
+            <select
+              value={categoryFilter}
+              onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }}
+              style={{
+                padding: '10px 14px', borderRadius: 8,
+                background: categoryFilter !== 'all' ? 'rgba(34,200,255,0.12)' : 'var(--rb-panel-solid, #0a2133)',
+                border: categoryFilter !== 'all' ? '1px solid rgba(34,200,255,0.4)' : '1px solid var(--rb-border)',
+                color: categoryFilter !== 'all' ? 'var(--rb-cyan, #22c8ff)' : 'var(--rb-text-main, #fff)',
+                fontSize: 13, fontWeight: categoryFilter !== 'all' ? 600 : 400
+              }}
+            >
+              <option value="all">Govt & Private</option>
+              <option value="Government">🏛 Government</option>
+              <option value="Private">🏥 Private</option>
+            </select>
+
             {/* Specialty Dropdown */}
             <select
               value={specialtyFilter}
-              onChange={(e) => {
-                setSpecialtyFilter(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => { setSpecialtyFilter(e.target.value); setCurrentPage(1); }}
               style={{
-                padding: '10px 14px',
-                borderRadius: 8,
+                padding: '10px 14px', borderRadius: 8,
                 background: 'var(--rb-panel-solid, #0a2133)',
                 border: '1px solid var(--rb-border)',
-                color: 'var(--rb-text-main, #fff)',
-                fontSize: 13
+                color: 'var(--rb-text-main, #fff)', fontSize: 13
               }}
             >
               <option value="all">All Clinical Specialties</option>
               {allSpecialties.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
+                <option key={s} value={s}>{s}</option>
               ))}
             </select>
 
             {/* Availability Dropdown */}
             <select
               value={availabilityFilter}
-              onChange={(e) => {
-                setAvailabilityFilter(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => { setAvailabilityFilter(e.target.value); setCurrentPage(1); }}
               style={{
-                padding: '10px 14px',
-                borderRadius: 8,
+                padding: '10px 14px', borderRadius: 8,
                 background: 'var(--rb-panel-solid, #0a2133)',
                 border: '1px solid var(--rb-border)',
-                color: 'var(--rb-text-main, #fff)',
-                fontSize: 13
+                color: 'var(--rb-text-main, #fff)', fontSize: 13
               }}
             >
               <option value="all">All Capacity Status</option>
               <option value="available">Beds Available</option>
               <option value="icu">ICU Beds Available</option>
+              <option value="emergency">Emergency Services</option>
             </select>
 
             {/* Sort Dropdown */}
@@ -764,15 +875,14 @@ export default function HospitalNetwork() {
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               style={{
-                padding: '10px 14px',
-                borderRadius: 8,
+                padding: '10px 14px', borderRadius: 8,
                 background: 'var(--rb-panel-solid, #0a2133)',
                 border: '1px solid var(--rb-border)',
-                color: 'var(--rb-text-main, #fff)',
-                fontSize: 13
+                color: 'var(--rb-text-main, #fff)', fontSize: 13
               }}
             >
               <option value="name">Sort by Name</option>
+              <option value="city">Sort by City</option>
               <option value="available_beds">Sort by Available Beds</option>
               <option value="total_beds">Sort by Total Capacity</option>
             </select>
@@ -800,6 +910,10 @@ export default function HospitalNetwork() {
                 setSearchTerm('');
                 setSpecialtyFilter('all');
                 setAvailabilityFilter('all');
+                setCityFilter('all');
+                setCategoryFilter('all');
+                setSortBy('name');
+                setCurrentPage(1);
               }}
               style={{
                 marginTop: 12,
@@ -843,14 +957,11 @@ export default function HospitalNetwork() {
                   }}
                 >
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <h3 style={{ margin: 0, fontSize: 16, color: 'var(--rb-text-main, #fff)' }}>{h.name}</h3>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                      <h3 style={{ margin: 0, fontSize: 15, color: 'var(--rb-text-main, #fff)', flex: 1, paddingRight: 8 }}>{h.name}</h3>
                       <span
                         style={{
-                          padding: '3px 8px',
-                          borderRadius: 12,
-                          fontSize: 10,
-                          fontWeight: 700,
+                          padding: '3px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, flexShrink: 0,
                           background: isAvailable ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
                           color: isAvailable ? '#10b981' : '#ef4444',
                           border: `1px solid ${isAvailable ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
@@ -860,7 +971,39 @@ export default function HospitalNetwork() {
                       </span>
                     </div>
 
-                    <p style={{ margin: '6px 0 12px', fontSize: 12, color: 'var(--rb-text-muted)' }}>
+                    {/* City & Category badges */}
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                      {h.city && (
+                        <span style={{
+                          padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 600,
+                          background: 'rgba(34,200,255,0.1)', color: 'var(--rb-cyan, #22c8ff)',
+                          border: '1px solid rgba(34,200,255,0.2)'
+                        }}>
+                          📍 {h.city}
+                        </span>
+                      )}
+                      {h.category && (
+                        <span style={{
+                          padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 600,
+                          background: h.category === 'Government' ? 'rgba(20,228,184,0.1)' : 'rgba(245,158,11,0.1)',
+                          color: h.category === 'Government' ? 'var(--rb-teal, #14e4b8)' : '#f59e0b',
+                          border: `1px solid ${h.category === 'Government' ? 'rgba(20,228,184,0.2)' : 'rgba(245,158,11,0.2)'}`
+                        }}>
+                          {h.category === 'Government' ? '🏛' : '🏥'} {h.category}
+                        </span>
+                      )}
+                      {h.emergency_services && (
+                        <span style={{
+                          padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 600,
+                          background: 'rgba(239,68,68,0.1)', color: '#ff5465',
+                          border: '1px solid rgba(239,68,68,0.2)'
+                        }}>
+                          🆘 Emergency
+                        </span>
+                      )}
+                    </div>
+
+                    <p style={{ margin: '0 0 12px', fontSize: 12, color: 'var(--rb-text-muted)' }}>
                       📍 {h.address}
                     </p>
 
@@ -1085,6 +1228,104 @@ export default function HospitalNetwork() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 14 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 12, color: 'var(--rb-text-muted)', marginBottom: 4 }}>
+                      City (Restricted) *
+                    </label>
+                    <select
+                      name="city"
+                      value={hospitalForm.city}
+                      onChange={handleFormChange}
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: 8,
+                        border: '1px solid var(--rb-border)',
+                        background: 'rgba(6,24,38,0.8)',
+                        color: '#fff',
+                        fontSize: 13
+                      }}
+                    >
+                      <option value="Chandigarh">Chandigarh</option>
+                      <option value="Mohali">Mohali (SAS Nagar)</option>
+                      <option value="Panchkula">Panchkula</option>
+                      <option value="Zirakpur">Zirakpur</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, color: 'var(--rb-text-muted)', marginBottom: 4 }}>
+                      Facility Category *
+                    </label>
+                    <select
+                      name="category"
+                      value={hospitalForm.category}
+                      onChange={handleFormChange}
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: 8,
+                        border: '1px solid var(--rb-border)',
+                        background: 'rgba(6,24,38,0.8)',
+                        color: '#fff',
+                        fontSize: 13
+                      }}
+                    >
+                      <option value="Government">🏛 Government</option>
+                      <option value="Private">🏥 Private</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 14 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, color: 'var(--rb-text-muted)', marginBottom: 4 }}>
+                      District / UT
+                    </label>
+                    <input
+                      type="text"
+                      name="district"
+                      value={hospitalForm.district}
+                      onChange={handleFormChange}
+                      placeholder="e.g. Chandigarh UT / SAS Nagar"
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: 8,
+                        border: '1px solid var(--rb-border)',
+                        background: 'rgba(6,24,38,0.8)',
+                        color: '#fff',
+                        fontSize: 13
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, color: 'var(--rb-text-muted)', marginBottom: 4 }}>
+                      Official Website
+                    </label>
+                    <input
+                      type="url"
+                      name="website"
+                      value={hospitalForm.website}
+                      onChange={handleFormChange}
+                      placeholder="https://..."
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: 8,
+                        border: '1px solid var(--rb-border)',
+                        background: 'rgba(6,24,38,0.8)',
+                        color: '#fff',
+                        fontSize: 13
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 14 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, color: 'var(--rb-text-muted)', marginBottom: 4 }}>
                       Phone / Hotline
                     </label>
                     <input
@@ -1194,6 +1435,18 @@ export default function HospitalNetwork() {
                       }}
                     />
                   </div>
+                </div>
+
+                <div style={{ marginBottom: 14 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#fff', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      name="emergency_services"
+                      checked={hospitalForm.emergency_services}
+                      onChange={(e) => setHospitalForm((prev) => ({ ...prev, emergency_services: e.target.checked }))}
+                    />
+                    <span>🆘 24/7 Verified Emergency &amp; Trauma Services Available</span>
+                  </label>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>

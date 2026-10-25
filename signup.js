@@ -1,5 +1,7 @@
 /* ==========================================================================
    REFERBRIDGE — SIGNUP CONTROLLER (signup.js)
+   Registers new hospital administrator accounts to localStorage.
+   When Supabase is configured, registration should be done via the React SPA.
    ========================================================================== */
 
 function applyTheme(theme) {
@@ -74,8 +76,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const themeToggle = document.getElementById("themeToggle");
   if (themeToggle) themeToggle.addEventListener("click", toggleTheme);
 
-  const signupForm = document.getElementById("signupForm");
+  // Hide / remove the sample fill button if it exists (no demo autofill)
   const sampleBtn = document.getElementById("sampleDataBtn");
+  if (sampleBtn) {
+    sampleBtn.style.display = "none";
+  }
+
+  const signupForm = document.getElementById("signupForm");
   const passInput = document.getElementById("password");
   const strengthWrap = document.getElementById("strengthWrap");
   const strengthLabel = document.getElementById("strengthLabel");
@@ -93,23 +100,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const res = calculatePasswordStrength(val);
       strengthLabel.textContent = res.text;
       strengthBar.className = `strength-bar ${res.cssClass}`;
-    });
-  }
-
-  // 1-Click Sample Data Fill
-  if (sampleBtn) {
-    sampleBtn.addEventListener("click", function () {
-      document.getElementById("adminName").value = "Dr. Ananya Desai";
-      document.getElementById("hospitalName").value = "Apex Multispecialty Hospital";
-      document.getElementById("email").value = "admin@apexmultispecialty.com";
-      document.getElementById("password").value = "ApexPass@2026";
-      document.getElementById("confirmPassword").value = "ApexPass@2026";
-
-      passInput.dispatchEvent(new Event("input"));
-
-      if (window.showToast) {
-        window.showToast("Sample hospital registration filled!", "info", "⚡");
-      }
     });
   }
 
@@ -144,35 +134,42 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      if (emailExists(email) || email.toLowerCase() === "admin@referbridge.com") {
+      if (emailExists(email)) {
         showError("An account with this email already exists. Please log in.");
         return;
       }
 
+      // Save to registered users list
       const users = JSON.parse(localStorage.getItem("referbridge_users") || "[]");
-      users.push({
+      const newUser = {
+        id: "user-" + Date.now(),
         name: adminName,
         hospitalName: hospitalName,
         email: email,
-        password: password
-      });
+        password: password,
+        role: "hospital_staff",
+        created_at: new Date().toISOString()
+      };
+      users.push(newUser);
       localStorage.setItem("referbridge_users", JSON.stringify(users));
 
-      // Seed hospital profile
+      // Seed a basic hospital profile for this registration
       const newProfile = {
         hospitalName: hospitalName,
         hospitalId: "RB-" + Math.floor(1000 + Math.random() * 9000),
-        location: "Chandigarh, Sector 17",
-        contact: "+91 98123 45678",
-        specialties: "Cardiology, Neurology, Emergency Care",
-        totalBeds: 150,
-        occupiedBeds: 82,
-        totalICU: 24,
-        occupiedICU: 16
+        adminName: adminName,
+        email: email,
+        location: "Chandigarh / Mohali / Panchkula / Zirakpur",
+        contact: "",
+        specialties: "",
+        totalBeds: 0,
+        occupiedBeds: 0,
+        totalICU: 0,
+        occupiedICU: 0
       };
       localStorage.setItem("referbridge_profile", JSON.stringify(newProfile));
 
-      showInfo("Hospital facility registered successfully! Redirecting to login...");
+      showInfo(`Hospital "${hospitalName}" registered successfully! Redirecting to login...`);
 
       setTimeout(() => {
         window.location.href = "index.html";

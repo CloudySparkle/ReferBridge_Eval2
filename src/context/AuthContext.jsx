@@ -32,10 +32,15 @@ export function AuthProvider({ children }) {
     initSession();
   }, []);
 
-  const login = async (email, password) => {
+  /**
+   * @param {string} email
+   * @param {string} password
+   * @param {boolean} rememberMe - If true, session persists across browser restarts.
+   */
+  const login = async (email, password, rememberMe = false) => {
     setLoading(true);
     try {
-      const data = await authService.signIn({ email, password });
+      const data = await authService.signIn({ email, password, rememberMe });
       setUser(data.user);
       setProfile(data.profile);
       setIsDemoMode(Boolean(data.isDemoMode || !isSupabaseConfigured));

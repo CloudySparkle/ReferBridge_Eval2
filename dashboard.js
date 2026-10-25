@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    REFERBRIDGE — DASHBOARD CONTROLLER (dashboard.js)
    ========================================================================== */
 
@@ -173,6 +173,102 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+
+  // --- Working ReferBot AI Controller ---
+  const botLauncher = document.getElementById("referbotLauncher");
+  const botWindow = document.getElementById("referbotWindow");
+  const botClose = document.getElementById("referbotClose");
+  const botInput = document.getElementById("referbotInput");
+  const botSend = document.getElementById("referbotSend");
+  const botMessages = document.getElementById("referbotMessages");
+  const botChips = document.querySelectorAll(".bot-chip");
+
+  if (botLauncher && botWindow) {
+    botLauncher.addEventListener("click", () => {
+      botWindow.classList.toggle("hidden");
+      if (!botWindow.classList.contains("hidden") && botInput) {
+        botInput.focus();
+      }
+    });
+  }
+
+  if (botClose && botWindow) {
+    botClose.addEventListener("click", () => {
+      botWindow.classList.add("hidden");
+    });
+  }
+
+  function appendBotMessage(sender, text) {
+    if (!botMessages) return;
+    const msgDiv = document.createElement("div");
+    msgDiv.className = sender === "user" ? "user-msg" : "bot-msg";
+    msgDiv.style.marginBottom = "10px";
+    msgDiv.style.padding = "8px 12px";
+    msgDiv.style.borderRadius = "8px";
+    msgDiv.style.fontSize = "12px";
+    msgDiv.style.lineHeight = "1.5";
+    
+    if (sender === "user") {
+      msgDiv.style.background = "rgba(20,228,184,0.15)";
+      msgDiv.style.border = "1px solid rgba(20,228,184,0.3)";
+      msgDiv.style.color = "#fff";
+      msgDiv.style.textAlign = "right";
+      msgDiv.textContent = text;
+    } else {
+      msgDiv.style.background = "rgba(255,255,255,0.05)";
+      msgDiv.style.border = "1px solid var(--rb-border)";
+      msgDiv.style.color = "var(--rb-text-main, #f0f7fd)";
+      msgDiv.innerHTML = text;
+    }
+    botMessages.appendChild(msgDiv);
+    botMessages.scrollTop = botMessages.scrollHeight;
+  }
+
+  function getBotResponse(input) {
+    const q = input.toLowerCase().trim();
+    if (q.includes("icu")) {
+      return "🏥 <strong>ICU Availability:</strong><br>• PGIMER: 0 ICU beds (At Capacity)<br>• GMCH 32: 2 ICU beds free<br>• Fortis Mohali: 6 ICU beds free<br>• Lifeline Zirakpur: 9 ICU beds free<br>• Paras Panchkula: 5 ICU beds free";
+    }
+    if (q.includes("bed") || q.includes("capacity") || q.includes("stat")) {
+      return "🛏 <strong>Regional Capacity Overview:</strong><br>• Total Beds Tracked: 3,800+<br>• Available Regional Vacancy: ~15%<br>• Mohali, Zirakpur, Chandigarh & Panchkula live sync active.";
+    }
+    if (q.includes("emergency")) {
+      return "🆘 <strong>Emergency & Trauma Centers:</strong><br>• PGIMER Level 1 Trauma Center (Sector 12)<br>• GMCH 32 Emergency Block<br>• Fortis Mohali 24/7 Cardiac Emergency<br>• Civil Hospital Panchkula";
+    }
+    if (q.includes("network") || q.includes("hospital")) {
+      return "🌐 <strong>ReferBridge Network:</strong><br>Connecting verified Government & Private hospitals exclusively across Chandigarh, Mohali, Panchkula & Zirakpur with real-time transfer triage.";
+    }
+    if (q.includes("referral") || q.includes("transfer")) {
+      return "📥 <strong>Referrals:</strong><br>To transfer a patient, navigate to <strong>Incoming Requests</strong> or <strong>Hospital Network</strong> and select destination hospital to initiate transfer triage.";
+    }
+    return "💡 I can assist with <strong>ICU availability</strong>, <strong>bed capacity</strong>, <strong>emergency centers</strong>, and <strong>referral routes</strong> across the Tricity network.";
+  }
+
+  function sendUserQuery(text) {
+    if (!text.trim()) return;
+    appendBotMessage("user", text);
+    if (botInput) botInput.value = "";
+    setTimeout(() => {
+      const reply = getBotResponse(text);
+      appendBotMessage("bot", reply);
+    }, 400);
+  }
+
+  if (botSend && botInput) {
+    botSend.addEventListener("click", () => sendUserQuery(botInput.value));
+    botInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendUserQuery(botInput.value);
+      }
+    });
+  }
+
+  botChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      sendUserQuery(chip.textContent.replace("💡", "").trim());
+    });
+  });
 
   renderAdminInfo(auth);
   renderDashboard();

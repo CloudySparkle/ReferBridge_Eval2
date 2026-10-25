@@ -63,14 +63,26 @@ runTest('Estimate travel duration under urban transit conditions', () => {
 });
 
 // ----------------------------------------------------------------------------
-// 2. Authentication Workflows
+// 2. Authentication Workflows (Real hospital registration & login)
 // ----------------------------------------------------------------------------
 console.log('\n2. Authentication & Role Permissions:');
 
-await runAsyncTest('Login with valid administrator credentials', async () => {
+await runAsyncTest('Register new hospital administrator account', async () => {
+  const reg = await authService.signUp({
+    email: 'director@fortis-mohali.com',
+    password: 'SecurePassword123!',
+    displayName: 'Dr. Gurpreet Singh',
+    hospitalName: 'Fortis Hospital Mohali',
+    role: 'admin'
+  });
+  assert(reg.user, 'Registered user should exist');
+});
+
+await runAsyncTest('Login with registered hospital administrator credentials', async () => {
   const result = await authService.signIn({
-    email: 'admin@referbridge.com',
-    password: 'admin123'
+    email: 'director@fortis-mohali.com',
+    password: 'SecurePassword123!',
+    rememberMe: true
   });
   assert(result.user, 'User object should exist');
   assert.strictEqual(result.profile.role, 'admin', 'Profile should have admin role');
@@ -81,7 +93,7 @@ await runAsyncTest('Reject login with invalid password', async () => {
   let thrown = false;
   try {
     await authService.signIn({
-      email: 'admin@referbridge.com',
+      email: 'director@fortis-mohali.com',
       password: 'wrongpassword'
     });
   } catch (e) {
@@ -92,31 +104,60 @@ await runAsyncTest('Reject login with invalid password', async () => {
 });
 
 // ----------------------------------------------------------------------------
-// 3. Hospital Network CRUD & Dynamic Directory
+// 3. Hospital Network CRUD, Geographic Restriction & Dynamic Directory
 // ----------------------------------------------------------------------------
 console.log('\n3. Hospital Network Dynamic Directory & CRUD:');
 
-await runAsyncTest('Fetch registered hospitals list', async () => {
+await runAsyncTest('Fetch registered hospitals list (all 4 permitted locations)', async () => {
   const list = await hospitalService.getHospitals();
   assert(Array.isArray(list), 'Hospitals should be an array');
   assert(list.length >= 8, `Expected at least 8 seeded hospitals, got ${list.length}`);
 });
 
-await runAsyncTest('Add a new hospital facility', async () => {
+await runAsyncTest('Filter hospitals by city and category', async () => {
+  const mohaliHospitals = await hospitalService.getHospitals({ city: 'Mohali' });
+  assert(mohaliHospitals.every(h => h.city === 'Mohali'), 'All returned hospitals should be in Mohali');
+  
+  const govtHospitals = await hospitalService.getHospitals({ category: 'Government' });
+  assert(govtHospitals.every(h => h.category === 'Government'), 'All returned hospitals should be Government');
+});
+
+await runAsyncTest('Enforce geographic restriction (reject hospitals outside Mohali, Zirakpur, Chandigarh, Panchkula)', async () => {
+  let rejected = false;
+  try {
+    await hospitalService.createHospital({
+      name: 'Delhi Care Hospital',
+      city: 'New Delhi',
+      address: 'Connaught Place, New Delhi',
+      specialties: ['General Medicine']
+    });
+  } catch (err) {
+    rejected = true;
+    assert(err.message.includes('not permitted'), 'Should mention permitted cities');
+  }
+  assert(rejected, 'Should reject hospital located outside the 4 permitted regions');
+});
+
+await runAsyncTest('Add a new hospital facility in a permitted location (Mohali)', async () => {
   const newHosp = await hospitalService.createHospital({
-    name: 'Fortis Hospital Mohali',
-    address: 'Sector 62, Phase VIII, Mohali',
+    name: 'Apollo Clinic Mohali',
+    city: 'Mohali',
+    category: 'Private',
+    district: 'SAS Nagar',
+    address: 'Sector 70, SAS Nagar, Mohali',
     phone: '+91 172 5096001',
-    specialties: ['Cardiology', 'Oncology', 'Organ Transplant'],
-    total_beds: 300,
-    available_beds: 42,
-    icu_beds_available: 8,
+    specialties: ['Cardiology', 'Oncology', 'Emergency Care'],
+    total_beds: 120,
+    available_beds: 35,
+    icu_beds_available: 6,
+    emergency_services: true,
     latitude: 30.7050,
     longitude: 76.7320
   });
   assert(newHosp.id, 'New hospital must have an ID');
-  assert.strictEqual(newHosp.name, 'Fortis Hospital Mohali');
-  assert.strictEqual(newHosp.available_beds, 42);
+  assert.strictEqual(newHosp.name, 'Apollo Clinic Mohali');
+  assert.strictEqual(newHosp.available_beds, 35);
+  assert.strictEqual(newHosp.city, 'Mohali');
 
   // Verify retrieval
   const retrieved = await hospitalService.getHospitalById(newHosp.id);
